@@ -21,7 +21,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 </head>
 <body>
 <main>
-<header><div class="kicker">ROBOFEST 2027 · Robot route lab</div><h1>직접 주행하는 미션 시뮬레이터</h1><p class="muted small">경기장 182×75cm · 로봇 폭 20cm × 길이 30cm · 무게 7kg 가정 · 앞/뒤 라인 센서 · 120초 유효 시간 · 시간초과 후에도 실험 가능</p></header>
+<header><div class="kicker">ROBOFEST 2027 · Robot route lab</div><h1>직접 주행하는 미션 시뮬레이터</h1><p class="muted small">경기장 182×75cm · 로봇 폭 20cm × 길이 25cm · 무게 7kg 가정 · 앞/뒤 라인 센서 · 120초 유효 시간 · 시간초과 후에도 실험 가능</p></header>
 <div class="layout">
 <section class="card">
 <div class="row space" style="margin-bottom:9px"><div class="row"><span class="pill" id="sessionBadge">출발 대기</span><span class="small muted" id="pose">X 83.0 · Y 37.5 · 서쪽</span></div><div class="timer" id="timer">00:00 <span class="muted">/ 02:00</span></div></div>
@@ -62,7 +62,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="metric"><span>집은 물체 수</span><strong id="heldCount">0개</strong></div><div class="metric"><span>팔 상태</span><strong id="grip">열림</strong></div>
 <div class="metric"><span>미션 진행</span><strong id="missionState">없음</strong></div>
 <div class="metric"><span>미션 완료</span><strong id="tasks">0 / 7</strong></div><div class="metric"><span>예상 점수</span><strong id="liveScore">—</strong></div>
-<p class="muted small">전체 폭 20cm = 본체 15cm + 좌우 바퀴 두께 각 2.5cm. 길이 30cm, 전·후방 라인 센서 각 7개입니다. 가장자리에서 차체 면적의 절반 미만이 경기장 밖으로 나가도 주행할 수 있습니다. 팔 돌출은 제한하지 않습니다. 50%부터는 추락 방지를 위해 더 이동할 수 없습니다.</p>
+<p class="muted small">전체 폭 20cm = 본체 15cm + 좌우 바퀴 두께 각 2.5cm. 차체 길이 25cm, 전·후방 라인 센서 각 7개입니다. 가장자리에서 차체 면적의 절반 미만이 경기장 밖으로 나가도 주행할 수 있습니다. 팔 돌출은 제한하지 않습니다. 50%부터는 추락 방지를 위해 더 이동할 수 없습니다.</p>
 <p class="note" id="driftNote">엔코더 누적 오차의 예측치만 표시합니다. 주행 위치에 인위적인 오차를 넣지 않습니다.</p>
 </div>
 <div class="section"><h2>물체 위치 조정 (기준 ±2cm)</h2>
@@ -85,9 +85,9 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="row"><button id="closeResults">닫기 · 결과 확인</button><button class="primary" id="newTrial">↺ 새 연습</button><button id="exportResults">결과 JSON 저장</button></div></div></div>
 <script>
 (()=>{'use strict';
-const W=182,H=75,FW=222,FH=115,OX=20,OY=20,HALF_L=15,HALF_W=10,DEG=Math.PI/180;
+const W=182,H=75,FW=222,FH=115,OX=20,OY=20,HALF_L=12.5,HALF_W=10,DEG=Math.PI/180;
 // Chassis: 20cm overall width = 15cm body + 2.5cm left wheel + 2.5cm right wheel.
-const BODY_HALF_W=7.5,WHEEL_WIDTH=2.5,SENSOR_FORWARD=13.3;
+const BODY_HALF_W=7.5,WHEEL_WIDTH=2.5,SENSOR_FORWARD=11.1;
 const SENSOR_LATERALS=Array.from({length:7},(_,i)=>(i-3)*2.2);
 const $=id=>document.getElementById(id), canvas=$('field'),ctx=canvas.getContext('2d');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),norm=a=>(a%360+360)%360,rad=a=>a*DEG,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -119,7 +119,7 @@ function circleHitBody(ob,x=robot.x,y=robot.y,a=robot.a,margin=0){let p=worldToL
 function rectHitBody(ob,x=robot.x,y=robot.y,a=robot.a){let cp=corners(x,y,a),x0=ob.x-ob.w/2,x1=ob.x+ob.w/2,y0=ob.y-ob.h/2,y1=ob.y+ob.h/2;
 let vs=vec(a),axis=[{x:1,y:0},{x:0,y:1},vs,{x:-vs.y,y:vs.x}];
 return axis.every(v=>{let p=cp.map(q=>q.x*v.x+q.y*v.y), q=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}].map(q=>q.x*v.x+q.y*v.y);return Math.max(...p)>=Math.min(...q)-.01&&Math.max(...q)>=Math.min(...p)-.01})}
-// Compute the portion of the rotated 20x30cm body outside the rectangular field.
+// Compute the portion of the rotated 20x25cm body outside the rectangular field.
 // Arm geometry is excluded: it may overhang the edge without causing a fall.
 function bodyOutsideFraction(x=robot.x,y=robot.y,a=robot.a){
   const cp=corners(x,y,a);
@@ -152,7 +152,7 @@ function resolveArmPush(ob){
   // Front-guide contact: circles touched by an open arm are physically displaced, too.
   const ends=[];
   for(const side of [-1,1]){
-    let p1=localToWorld(14.2,side*7.1),p2=localToWorld(24.5,side*(robot.gripper?6.2:9.5));
+    let p1=localToWorld(HALF_L-.8,side*7.1),p2=localToWorld(24.5,side*(robot.gripper?6.2:9.5));
     ends.push([p1,p2]);
     if(robot.gripper)ends.push([p2,localToWorld(25.2,side*4.5)]);
   }
@@ -183,7 +183,7 @@ function capturePocket(){
     if(robot.held.includes(ob.id))continue;
     const p=worldToLocal(ob);
     // Preserve actual offset of each object; no limit of one object.
-    if(p.f>=HALF_L-1.5 && p.f<=HALF_L+12 && Math.abs(p.l)<=8.7+ob.r*.25){
+    if(p.f>=HALF_L-1.5 && p.f<=HALF_L+13.5 && Math.abs(p.l)<=8.7+ob.r*.25){
       robot.held.push(ob.id);robot.slots[ob.id]={f:p.f,l:p.l};newOnes.push(ob.label)
     }
   }
@@ -321,7 +321,7 @@ function changeOffset(axis,value){let o=allObjects().find(o=>o.id===selected),v=
 function setReplayFrame(frame){t=frame.t;Object.assign(robot,frame.robot);for(const s of frame.objects){let o=world.objects.find(o=>o.id===s.id);if(o){o.x=s.x;o.y=s.y}}Object.assign(achievements,frame.flags);task=frame.task?{...frame.task}:null}
 function replayStart(){if(record.length<3){say('재생할 운전 기록이 없습니다. 먼저 주행해 주세요','warn');return}replay=true;running=true;ended=false;replayT=0;replayLen=record[record.length-1].t;setReplayFrame(record[0]);say('운전 기록 재생 중 · 키보드 운전 잠금','ok',true)}
 function replayStep(dt){replayT+=dt;if(replayT>=replayLen){setReplayFrame(record[record.length-1]);running=false;ended=true;say('기록 재생 종료','ok');return}let left=0,right=record.length-1;while(left+1<right){let m=(left+right)>>1;if(record[m].t<=replayT)left=m;else right=m}let a=record[left],b=record[right],u=(replayT-a.t)/(b.t-a.t);setReplayFrame(a);robot.x=a.robot.x+(b.robot.x-a.robot.x)*u;robot.y=a.robot.y+(b.robot.y-a.robot.y)*u;robot.a=norm(a.robot.a+(((b.robot.a-a.robot.a+540)%360)-180)*u);t=replayT}
-function saveJSON(){const data={name:'ROBOFEST 2027 manual practice',dimensions:{field:[182,75],robot:[20,30],weightKg:7},result:trialResult,modelNote:'simplified 2D geometry and estimated encoder error; not a physical or official scoring engine',frames:record};let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='robofest2027_practice_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),300)}
+function saveJSON(){const data={name:'ROBOFEST 2027 manual practice',dimensions:{field:[182,75],robot:[20,25],weightKg:7},result:trialResult,modelNote:'simplified 2D geometry and estimated encoder error; not a physical or official scoring engine',frames:record};let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='robofest2027_practice_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),300)}
 function moveKeyboard(key,active){if(replay)return;if(active&&!running&&!ended)running=true;if(ended)return;keys[key]=active;if(!active&&key==='Shift')keys.Shift=false}
 function targetTurn(amount){if(replay||task||ended)return;if(!running)running=true;robot.autoAngle=norm((robot.autoAngle!==null?robot.autoAngle:robot.a)+amount);say((amount<0?'반시계 ':'시계 ')+Math.abs(amount)+'° 예약 · 목표 '+robot.autoAngle.toFixed(1)+'°','ok')}
 function brake(){robot.v=0;robot.omega=0;robot.autoAngle=null;keys={};say('모터 정지 명령','ok')}
@@ -332,7 +332,7 @@ const demoRoute=[
  {kind:'drive',axis:'y',to:29,label:'디스펜서 정렬'},
  {kind:'task',id:'food',label:'사료 수거 12초'},
  {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
- {kind:'drive',axis:'x',to:98,label:'펫호텔 접근'},
+ {kind:'drive',axis:'x',to:100,label:'펫호텔 접근'},
  {kind:'task',id:'hotel',label:'사료 배달 8초'},
  {kind:'drive',axis:'x',to:85,label:'호텔에서 13cm 후진 · 배설물 회피'},
  {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
@@ -379,7 +379,7 @@ function demoUpdate(dt){
 }
 function saveResult(){
   if(!trialResult){say('종료 후 결과를 저장할 수 있습니다','warn');return}
-  const payload={field_cm:[182,75],robot_cm:[20,30],weight_kg:7,simulated:true,...trialResult,
+  const payload={field_cm:[182,75],robot_cm:[20,25],weight_kg:7,simulated:true,...trialResult,
    motion:{distance_cm:robot.distance,rotation_degrees:robot.turn,corrections:robot.corrections},logs:eventLogs};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=u;a.download='robofest2027_trial_score.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)
@@ -405,17 +405,17 @@ label('DOG',6,4,3.1);label('MAIL',19,37,2.8);label('MAIL',19,53,2.8);label('DOG 
 ctx.restore(); // Field clipping ends here: allow robot body and arms to render past the cliff edge.
 // Confidence halo represents accumulated encoder uncertainty; no movement perturbation.
 if(robot.errPos>1){ctx.save();ctx.setLineDash([1.6,1.1]);ctx.strokeStyle='rgba(211,91,42,.75)';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(robot.x,robot.y,Math.min(robot.errPos,28),0,Math.PI*2);ctx.stroke();ctx.restore()}
-// Draw full 20 x 30 robot and front arms.
+// Draw full 20 x 25cm robot and front arms.
 ctx.save();ctx.translate(robot.x,robot.y);ctx.rotate(rad(robot.a));
 // Distinct left/right wheels occupy 2.5cm each; central chassis is 15cm wide.
-rect(-9,-10,18,WHEEL_WIDTH,'#263843','#14242e',.5);
-rect(-9,BODY_HALF_W,18,WHEEL_WIDTH,'#263843','#14242e',.5);
-rect(-15,-BODY_HALF_W,30,2*BODY_HALF_W,'#0b6577','#063d4d',.7);
-rect(-11.5,-5.8,22,11.6,'rgba(14,108,121,.45)');
+rect(-7.5,-10,15,WHEEL_WIDTH,'#263843','#14242e',.5);
+rect(-7.5,BODY_HALF_W,15,WHEEL_WIDTH,'#263843','#14242e',.5);
+rect(-HALF_L,-BODY_HALF_W,2*HALF_L,2*BODY_HALF_W,'#0b6577','#063d4d',.7);
+rect(-9.5,-5.8,19,11.6,'rgba(14,108,121,.45)');
 // forward direction triangle
 ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(4,-3.5);ctx.lineTo(4,3.5);ctx.closePath();ctx.fillStyle='#d7fff6';ctx.fill();
 ctx.font='600 3.5px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#efffff';ctx.fillText('7kg',-2,0);if(robot.held.length){ctx.font='600 2.6px system-ui';ctx.fillText('×'+robot.held.length,16,-13)}
-const armOuter=robot.gripper?6.2:9.5;ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(14.2,side*7.1);ctx.lineTo(24.5,side*armOuter);if(robot.gripper)ctx.lineTo(25.2,side*4.5);ctx.stroke()}
+const armOuter=robot.gripper?6.2:9.5;ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(HALF_L-.8,side*7.1);ctx.lineTo(24.5,side*armOuter);if(robot.gripper)ctx.lineTo(25.2,side*4.5);ctx.stroke()}
 // Front and rear line-tracking sensor arrays, 7 channels each.
 const sense=sensorStates();
 for(const side of [1,-1]){
