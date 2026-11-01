@@ -19,11 +19,12 @@ with sync_playwright() as playwright:
 
     # The front gripper can capture more than one object at once.
     page.evaluate("window.__rfTest.reset()")
-    page.evaluate("window.__rfTest.setPose(147.5,60,180)")
+    assert page.evaluate("window.__rfTest.setPose(128,74.9,270)") is True
     page.evaluate("window.__rfTest.grab()")
     held = page.evaluate("window.__rfTest.getState().robot.held")
     assert "cat1" in held and "cat2" in held, held
-    print("Multiple-object capture: OK")
+    assert page.evaluate("window.__rfTest.getState().armLength") == 3
+    print("Three-centimeter front arms and multi-object capture: OK")
 
     # Each arrow-key press queues a smooth 15-degree turn.
     page.evaluate("window.__rfTest.reset()")
@@ -80,20 +81,36 @@ with sync_playwright() as playwright:
     assert sum(bool(s["hit"]) for s in sensor_hits["back"]) == 0, sensor_hits
     print("Dual seven-channel line sensors: OK")
 
+    # A 3cm arm must not activate distant fixtures; near surfaces remain usable.
+    page.evaluate("window.__rfTest.reset()")
+    assert page.evaluate("window.__rfTest.setPose(57,29,270)") is True
+    assert page.evaluate("window.__rfTest.missionNear({shape:'rect',x:57,y:4,w:12,h:8})") is False
+    assert page.evaluate("window.__rfTest.setPose(57,24,270)") is True
+    assert page.evaluate("window.__rfTest.missionNear({shape:'rect',x:57,y:4,w:12,h:8})") is True
+    assert page.evaluate("window.__rfTest.setPose(107,37.5,0)") is True
+    assert page.evaluate("window.__rfTest.missionNear({shape:'circle',x:131,y:38,r:9})") is True
+    print("Three-centimeter mission reach: OK")
+
     # Verify the reference route on the default object layout.
     page.locator("#newTrial").click()
     page.locator("#demo").click()
     result = page.evaluate("""() => {
+        let carriedFoodSeen = false;
         for (let i = 0; i < 2300; i++) {
             window.__rfTest.advance(0.1);
             const state = window.__rfTest.getState();
+            carriedFoodSeen ||= state.foodCounts.carried === 10;
             if (state.result || (state.routeIndex === -1 && i > 4))
-                return state;
+                return {...state, carriedFoodSeen};
         }
-        return window.__rfTest.getState();
+        return {...window.__rfTest.getState(), carriedFoodSeen};
     }""")
     assert result["result"], result["routeMessage"]
     assert result["score"]["total"] == 61, result["score"]
+    assert result["carriedFoodSeen"], "Food never travelled with the robot"
+    assert result["foodCounts"] == {"dispenser": 0, "carried": 0, "hotel": 10}, result["foodCounts"]
+    assert page.locator("#foodStatus").inner_text().strip() == "0 / 0 / 10"
+    print("Food dispenser -> robot -> hotel: 10 pieces, 20 points")
     assert not errors, errors
     print("Default reference route: 61/100 points, %.2fs" % result["t"])
     print("All regression tests passed.")
