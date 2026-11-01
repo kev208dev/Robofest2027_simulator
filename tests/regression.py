@@ -92,7 +92,9 @@ with sync_playwright() as playwright:
     print("Three-centimeter mission reach: OK")
 
     # Verify the reference route on the default object layout.
-    page.locator("#newTrial").click()
+    # #newTrial lives inside the hidden results dialog here (reset() closed it), so
+    # use the always-visible restart button, which calls the same reset().
+    page.locator("#restart").click()
     page.locator("#demo").click()
     result = page.evaluate("""() => {
         let carriedFoodSeen = false;
