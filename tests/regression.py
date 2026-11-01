@@ -109,6 +109,7 @@ with sync_playwright() as playwright:
     assert result["score"]["total"] == 61, result["score"]
     assert result["carriedFoodSeen"], "Food never travelled with the robot"
     assert result["foodCounts"] == {"dispenser": 0, "carried": 0, "hotel": 10}, result["foodCounts"]
+    page.wait_for_function("document.getElementById('foodStatus').textContent.trim() === '0 / 0 / 10'")
     assert page.locator("#foodStatus").inner_text().strip() == "0 / 0 / 10"
     print("Food dispenser -> robot -> hotel: 10 pieces, 20 points")
     assert not errors, errors
