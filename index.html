@@ -7,7 +7,7 @@
 :root{color-scheme:dark;font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif;--bg:#09131b;--panel:#132431;--panel2:#1a3140;--line:#324f5e;--text:#eef7f8;--muted:#adc3ce;--green:#55d6a0;--amber:#f2c66a;--red:#ff817f}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 30% 0,#183443,#08131c 75%);color:var(--text)}
 main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,2.8vw,30px);letter-spacing:-.03em}h2{font-size:14px;margin:0 0 11px;color:#e9f1f7}p{margin:6px 0;line-height:1.5}.muted{color:var(--muted)}.small{font-size:12px}.kicker{color:#69cdb1;font-size:12px;font-weight:650;letter-spacing:.09em;text-transform:uppercase}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 342px;gap:14px;margin-top:15px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px;min-width:0}.canvas-wrap{background:#e7f0f2;border-radius:12px;overflow:hidden;position:relative;line-height:0}canvas{display:block;width:100%;aspect-ratio:196/99;touch-action:none;cursor:crosshair}button,input,select{font:inherit}button{border-radius:9px;color:var(--text);background:#284354;border:1px solid #4a6776;padding:9px 12px;font-size:12px;font-weight:600;cursor:pointer}button:hover{filter:brightness(1.16)}button:active{transform:translateY(1px)}button.primary{background:#087f72;border-color:#4fbfa6}button.warning{background:#654534;border-color:#a67d3e}button:disabled{opacity:.4;cursor:not-allowed}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.space{justify-content:space-between}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0}.chip{padding:6px 9px;border:1px solid #355467;border-radius:50px;background:#1d3746;color:#c5d7dc;font-size:11px}.chip strong{color:white}.timer{font-variant-numeric:tabular-nums;font-size:20px;font-weight:750}.timer .muted{font-size:12px;font-weight:400}.bar{height:7px;border-radius:10px;background:#264455;overflow:hidden}.bar div{height:100%;width:0;background:linear-gradient(90deg,#36b88f,#c5e899)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 342px;gap:14px;margin-top:15px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px;min-width:0}.canvas-wrap{background:#e7f0f2;border-radius:12px;overflow:hidden;position:relative;line-height:0}canvas{display:block;width:100%;aspect-ratio:222/115;touch-action:none;cursor:crosshair}button,input,select{font:inherit}button{border-radius:9px;color:var(--text);background:#284354;border:1px solid #4a6776;padding:9px 12px;font-size:12px;font-weight:600;cursor:pointer}button:hover{filter:brightness(1.16)}button:active{transform:translateY(1px)}button.primary{background:#087f72;border-color:#4fbfa6}button.warning{background:#654534;border-color:#a67d3e}button:disabled{opacity:.4;cursor:not-allowed}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.space{justify-content:space-between}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0}.chip{padding:6px 9px;border:1px solid #355467;border-radius:50px;background:#1d3746;color:#c5d7dc;font-size:11px}.chip strong{color:white}.timer{font-variant-numeric:tabular-nums;font-size:20px;font-weight:750}.timer .muted{font-size:12px;font-weight:400}.bar{height:7px;border-radius:10px;background:#264455;overflow:hidden}.bar div{height:100%;width:0;background:linear-gradient(90deg,#36b88f,#c5e899)}
 #status{padding:10px 11px;background:#224537;border-left:4px solid var(--green);border-radius:8px;color:#d8f7e8;font-size:12px;min-height:37px;line-height:1.45;margin-top:10px}#status.warn{background:#4f3c27;border-color:var(--amber);color:#ffe9c4}#status.bad{background:#4e3037;border-color:var(--red);color:#ffe4e0}
 .controls{margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.controls .timer{margin-left:auto}.speedSel{border:1px solid #526e77;background:#233e4c;color:var(--text);border-radius:7px;padding:7px;font-size:12px}.instructions{margin:12px 0 0;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:#d5e1e4;line-height:1.9}.instructions kbd{display:inline-block;min-width:23px;text-align:center;background:#375263;border:1px solid #68808c;border-bottom-width:3px;padding:0px 4px;border-radius:5px;color:#fff;font:600 11px system-ui;line-height:20px}.compact{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.touch button{min-height:39px;touch-action:none}.touch button.held{background:#0a8e7e}.touch .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.touch .actions button{flex:1;white-space:nowrap}.section{padding:12px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:12px}.metric{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #33515e;font-size:12px}.metric:last-child{border:0}.metric strong{font-variant-numeric:tabular-nums;color:#fff}.pill{display:inline-block;border-radius:20px;padding:3px 7px;background:#285f52;color:#c7f9e5;font-size:11px;font-weight:700}.pill.warn{background:#72532e;color:#ffe3ae}.pill.bad{background:#793b47;color:#fff}.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.setting label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}.setting input,.setting select{width:100%;min-width:0;background:#172b39;color:white;border:1px solid #507080;border-radius:7px;padding:7px;font-size:12px}.setting input[type=range]{padding:0;accent-color:var(--green);height:20px}.check{font-size:12px;display:flex;align-items:center;gap:6px}.check input{accent-color:var(--green)}.log{height:120px;overflow-y:auto;font-size:11px;line-height:1.7;color:#bdd2d9;padding:8px;background:#112531;border-radius:8px}.log div{border-bottom:1px solid #234352;padding:3px 0}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:9px}.legend i{width:13px;height:9px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:5px}.footer{font-size:11px;color:#9fb4c0;margin-top:12px;line-height:1.7}.divider{height:1px;background:#365261;margin:12px 0}.note{font-size:12px;line-height:1.55;color:#e8ce93}.full{width:100%}.rightbuttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}.empty{visibility:hidden}
 @media(max-width:960px){.layout{grid-template-columns:1fr}.rightside{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rightside>.section{margin-bottom:0}.rightside>.section:last-child{grid-column:1/-1}}
@@ -54,11 +54,13 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="metric"><span>보정 미실시 거리</span><strong id="uncorrected">0.0 cm</strong></div>
 <div class="metric"><span>추정 위치 오차</span><strong id="positionError">±0.0 cm</strong></div>
 <div class="metric"><span>추정 방향 오차</span><strong id="headingError">±0.0°</strong></div>
+<div class="metric"><span>경기장 밖 차체 면적</span><strong id="overhang">0.0% / 50%</strong></div>
 <div class="metric"><span>센서 앞 / 뒤</span><strong id="sensors">— / —</strong></div>
 <div class="metric"><span>보정 횟수</span><strong id="corrections">0회</strong></div>
 <div class="metric"><span>집은 물체 수</span><strong id="heldCount">0개</strong></div><div class="metric"><span>팔 상태</span><strong id="grip">열림</strong></div>
 <div class="metric"><span>미션 진행</span><strong id="missionState">없음</strong></div>
 <div class="metric"><span>미션 완료</span><strong id="tasks">0 / 7</strong></div><div class="metric"><span>예상 점수</span><strong id="liveScore">—</strong></div>
+<p class="muted small">가장자리에서 차체 면적의 절반 미만이 경기장 밖으로 나가도 주행할 수 있습니다. 팔 돌출은 제한하지 않습니다. 50%부터는 추락 방지를 위해 더 이동할 수 없습니다.</p>
 <p class="note" id="driftNote">엔코더 누적 오차의 예측치만 표시합니다. 주행 위치에 인위적인 오차를 넣지 않습니다.</p>
 </div>
 <div class="section"><h2>물체 위치 조정 (기준 ±2cm)</h2>
@@ -81,7 +83,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="row"><button id="closeResults">닫기 · 결과 확인</button><button class="primary" id="newTrial">↺ 새 연습</button><button id="exportResults">결과 JSON 저장</button></div></div></div>
 <script>
 (()=>{'use strict';
-const W=182,H=75,FW=196,FH=99,OX=7,OY=12,HALF_L=15,HALF_W=10,DEG=Math.PI/180;
+const W=182,H=75,FW=222,FH=115,OX=20,OY=20,HALF_L=15,HALF_W=10,DEG=Math.PI/180;
 const $=id=>document.getElementById(id), canvas=$('field'),ctx=canvas.getContext('2d');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),norm=a=>(a%360+360)%360,rad=a=>a*DEG,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const world={fixtures:[{id:'food',label:'사료 디스펜서',x:57,y:4,ox:57,oy:4,shape:'rect',w:12,h:8,color:'#679bbd'},
@@ -112,8 +114,34 @@ function circleHitBody(ob,x=robot.x,y=robot.y,a=robot.a,margin=0){let p=worldToL
 function rectHitBody(ob,x=robot.x,y=robot.y,a=robot.a){let cp=corners(x,y,a),x0=ob.x-ob.w/2,x1=ob.x+ob.w/2,y0=ob.y-ob.h/2,y1=ob.y+ob.h/2;
 let vs=vec(a),axis=[{x:1,y:0},{x:0,y:1},vs,{x:-vs.y,y:vs.x}];
 return axis.every(v=>{let p=cp.map(q=>q.x*v.x+q.y*v.y), q=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}].map(q=>q.x*v.x+q.y*v.y);return Math.max(...p)>=Math.min(...q)-.01&&Math.max(...q)>=Math.min(...p)-.01})}
-function fixtureCollision(x=robot.x,y=robot.y,a=robot.a){let cp=corners(x,y,a);if(cp.some(p=>p.x<0||p.x>W||p.y<0||p.y>H))return '낭떠러지: 차체가 경기장 경계를 벗어나려 합니다';for(const ob of world.fixtures){if(ob.shape==='circle'?circleHitBody(ob,x,y,a):rectHitBody(ob,x,y,a))return ob.label+' 장애물과 차체 충돌'}return null}
-function objectAllowed(ob){if(ob.x-ob.r<0||ob.x+ob.r>W||ob.y-ob.r<0||ob.y+ob.r>H)return false;return !world.fixtures.some(f=>{if(f.shape==='circle')return Math.hypot(ob.x-f.x,ob.y-f.y)<ob.r+f.r;return Math.abs(ob.x-f.x)<ob.r+f.w/2 && Math.abs(ob.y-f.y)<ob.r+f.h/2})}
+// Compute the portion of the rotated 20x30cm body outside the rectangular field.
+// Arm geometry is excluded: it may overhang the edge without causing a fall.
+function bodyOutsideFraction(x=robot.x,y=robot.y,a=robot.a){
+  const cp=corners(x,y,a);
+  let polygon=[cp[0],cp[1],cp[3],cp[2]]; // ordered rectangle, not bow-tie
+  for(const [axis,side,limit] of [['x',1,0],['x',-1,W],['y',1,0],['y',-1,H]]){
+    if(!polygon.length)break;
+    const clipped=[];
+    for(let i=0;i<polygon.length;i++){
+      const u=polygon[i],v=polygon[(i+1)%polygon.length];
+      const du=side*(u[axis]-limit),dv=side*(v[axis]-limit);
+      if((du>=0)!==(dv>=0)){
+        const t=du/(du-dv);
+        clipped.push({x:u.x+t*(v.x-u.x),y:u.y+t*(v.y-u.y)});
+      }
+      if(dv>=0)clipped.push(v);
+    }
+    polygon=clipped;
+  }
+  let doubleArea=0;
+  for(let i=0;i<polygon.length;i++){
+    const p=polygon[i],q=polygon[(i+1)%polygon.length];
+    doubleArea+=p.x*q.y-q.x*p.y;
+  }
+  return clamp(1-Math.abs(doubleArea)/2/(4*HALF_L*HALF_W),0,1);
+}
+function fixtureCollision(x=robot.x,y=robot.y,a=robot.a){if(bodyOutsideFraction(x,y,a)>=.5-1e-8)return '낭떠러지: 차체 면적의 50% 이상이 경기장 밖입니다 (추락 위험)';for(const ob of world.fixtures){if(ob.shape==='circle'?circleHitBody(ob,x,y,a):rectHitBody(ob,x,y,a))return ob.label+' 장애물과 차체 충돌'}return null}
+function objectAllowed(ob,allowEdgeOverhang=false){if(!allowEdgeOverhang&&(ob.x-ob.r<0||ob.x+ob.r>W||ob.y-ob.r<0||ob.y+ob.r>H))return false;return !world.fixtures.some(f=>{if(f.shape==='circle')return Math.hypot(ob.x-f.x,ob.y-f.y)<ob.r+f.r;return Math.abs(ob.x-f.x)<ob.r+f.w/2 && Math.abs(ob.y-f.y)<ob.r+f.h/2})}
 function resolvePush(ob){if(!circleHitBody(ob))return true;let p=worldToLocal(ob), dF=HALF_L+ob.r-Math.abs(p.f),dL=HALF_W+ob.r-Math.abs(p.l);if(dF<dL)p.f+=(p.f>=0?1:-1)*(dF+.07);else p.l+=(p.l>=0?1:-1)*(dL+.07);const q=localToWorld(p.f,p.l),prev={x:ob.x,y:ob.y};ob.x=q.x;ob.y=q.y;if(!objectAllowed(ob)){ob.x=prev.x;ob.y=prev.y;return false}return true}
 function resolveArmPush(ob){
   // Front-guide contact: circles touched by an open arm are physically displaced, too.
@@ -139,7 +167,7 @@ function armTarget(){const f=HALF_L+6;return localToWorld(f,0)}
 function heldUpdate(){
   for(const id of robot.held){const ob=world.objects.find(o=>o.id===id),slot=robot.slots[id];if(!ob||!slot)continue;
     const q=localToWorld(slot.f,slot.l),before={x:ob.x,y:ob.y};ob.x=q.x;ob.y=q.y;
-    if(!objectAllowed(ob)){ob.x=before.x;ob.y=before.y;return false}
+    if(!objectAllowed(ob,true)){ob.x=before.x;ob.y=before.y;return false}
   }
   return true
 }
@@ -332,7 +360,7 @@ function saveResult(){
   a.href=u;a.download='robofest2027_trial_score.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)
 }
 // Exposed solely for deterministic browser-based regression tests and reproducible route validation.
-window.__rfTest={advance:(dt)=>advance(dt),startDemo,finishGame,getState:()=>({t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),result:trialResult,routeIndex,routeMessage,task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring};
+window.__rfTest={advance:(dt)=>advance(dt),startDemo,finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),result:trialResult,routeIndex,routeMessage,task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction};
 function draw(){let viewport=canvas.getBoundingClientRect(),pix=window.devicePixelRatio||1,cw=Math.max(1,Math.round(viewport.width*pix)),ch=Math.max(1,Math.round(viewport.height*pix));if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(cw/FW,0,0,ch/FH,OX*cw/FW,OY*ch/FH);ctx.clearRect(-OX,-OY,FW,FH);ctx.fillStyle='#e9f1f3';ctx.fillRect(-OX,-OY,FW,FH);
 function rect(x,y,w,h,fill,stroke,sw=.5){ctx.beginPath();ctx.rect(x,y,w,h);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
 function circle(x,y,r,fill,stroke,sw=.5){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
@@ -349,6 +377,7 @@ for(const f of world.fixtures){if(f.shape==='circle'){circle(f.x,f.y,f.r,f.color
 for(const o of world.objects){let onMove=dist(o,{x:o.ox,y:o.oy})>2.2;circle(o.x,o.y,o.r,o.color,onMove?'#b35342':'#6b7f87',onMove?.95:.6);if(o.id==='cat1')circle(o.x,o.y,.65,'#8bb7c6');if(o.id.startsWith('mail')){rect(o.x-1.4,o.y-.9,2.8,1.8,'#f4e8e8');}if(o.id==='dog')circle(o.x+.5,o.y-.4,.6,'#e9f0ed');}
 // Fixed labels and occasional highlights.
 label('DOG',6,4,3.1);label('MAIL',19,37,2.8);label('MAIL',19,53,2.8);label('DOG PARK',10,73,2.6);label('GROOMER',52,69.4,2.5,'#3e5948','center');label('VET',127,69.4,2.5,'#3e5948','center');label('LITTER',117,-2.7,3,'#34474a','center');label('CAT',122,55,2.8);label('CAT',134,55,2.8);
+ctx.restore(); // Field clipping ends here: allow robot body and arms to render past the cliff edge.
 // Confidence halo represents accumulated encoder uncertainty; no movement perturbation.
 if(robot.errPos>1){ctx.save();ctx.setLineDash([1.6,1.1]);ctx.strokeStyle='rgba(211,91,42,.75)';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(robot.x,robot.y,Math.min(robot.errPos,28),0,Math.PI*2);ctx.stroke();ctx.restore()}
 // Draw full 20 x 30 robot and front arms.
@@ -362,12 +391,12 @@ const sense=sensorStates();for(let j=0;j<2;j++){const front=j===0;for(let k=0;k<
 ctx.restore();
 // editing selection plus/minus 2cm guide
 let selectedObj=allObjects().find(o=>o.id===selected);if(selectedObj){ctx.save();ctx.strokeStyle='rgba(34,119,184,.7)';ctx.setLineDash([1.2,1.2]);rect(selectedObj.ox-2,selectedObj.oy-2,4,4,null,'#267caa',.6);ctx.restore()}
-ctx.restore();ctx.save();ctx.setLineDash([2,1.2]);ctx.strokeStyle='#78939c';ctx.lineWidth=.7;ctx.strokeRect(0,0,W,H);ctx.restore();
+ctx.save();ctx.setLineDash([2,1.2]);ctx.strokeStyle='#78939c';ctx.lineWidth=.7;ctx.strokeRect(0,0,W,H);ctx.restore();
 label('182 cm',W/2,81,3.2,'#3a5867','center');label('75 cm',-3,H/2,2.6,'#3a5867','center');label('초록 = 지난 영역 (폭 20cm) · 붉은 점선 원 = 위치 불확실성',0,-8,2.9);
 }
 function updateHUD(){let s=sensorStates(),counts=[s.front,s.back].map(g=>g.filter(o=>o.hit).length),dir=['동','남','서','북'][Math.round(norm(robot.a)/90)%4];$('pose').textContent=`X ${robot.x.toFixed(1)} · Y ${robot.y.toFixed(1)} · ${dir} ${norm(robot.a).toFixed(0)}°`;
 $('timer').innerHTML=timeText(t)+' <span class="muted">/ 02:00</span>';$('timebar').style.width=Math.min(100,t/120*100)+'%';$('timebar').style.background=t>120?'#ef9564':'linear-gradient(90deg,#36b88f,#c5e899)';$('sessionBadge').textContent=replay?'기록 재생':ended?'경기 종료':t>120?'시간 초과 · 연습 지속':task?'설비 작동':running?'주행 중':'일시정지 / 대기';
-$('velocity').textContent=robot.v.toFixed(1)+' cm/s';$('distance').textContent=robot.distance.toFixed(1)+' cm';$('rotation').textContent=robot.turn.toFixed(0)+'°';$('uncorrected').textContent=robot.uncorrected.toFixed(1)+' cm';$('positionError').textContent='±'+robot.errPos.toFixed(1)+' cm';$('headingError').textContent='±'+robot.errAng.toFixed(1)+'°';$('sensors').textContent=counts[0]+'/3 · '+counts[1]+'/3';$('corrections').textContent=robot.corrections+'회';$('grip').textContent=robot.held.length?'포획 ('+robot.held.map(id=>world.objects.find(o=>o.id===id)?.label).join(', ')+')':robot.gripper?'닫힘 (빈 팔)':'열림';$('missionState').textContent=task?task.label+' · '+Math.ceil(task.remaining)+'초':achievements.food&&!achievements.hotel?'사료 보유': '대기';$('tasks').textContent=Object.values(achievements).filter(Boolean).length+' / 7';$('heldCount').textContent=robot.held.length+'개';$('liveScore').textContent=scoring().total+' / 100';
+$('velocity').textContent=robot.v.toFixed(1)+' cm/s';$('distance').textContent=robot.distance.toFixed(1)+' cm';$('rotation').textContent=robot.turn.toFixed(0)+'°';$('uncorrected').textContent=robot.uncorrected.toFixed(1)+' cm';$('positionError').textContent='±'+robot.errPos.toFixed(1)+' cm';$('headingError').textContent='±'+robot.errAng.toFixed(1)+'°';$('sensors').textContent=counts[0]+'/3 · '+counts[1]+'/3';$('corrections').textContent=robot.corrections+'회';const outside=bodyOutsideFraction();$('overhang').textContent=(outside*100).toFixed(1)+'% / 50%';$('overhang').style.color=outside>=.35?'#ff817f':outside>=.15?'#f2c66a':'#eef7f8';$('grip').textContent=robot.held.length?'포획 ('+robot.held.map(id=>world.objects.find(o=>o.id===id)?.label).join(', ')+')':robot.gripper?'닫힘 (빈 팔)':'열림';$('missionState').textContent=task?task.label+' · '+Math.ceil(task.remaining)+'초':achievements.food&&!achievements.hotel?'사료 보유': '대기';$('tasks').textContent=Object.values(achievements).filter(Boolean).length+' / 7';$('heldCount').textContent=robot.held.length+'개';$('liveScore').textContent=scoring().total+' / 100';
 let risk=(robot.errPos>=3||robot.errAng>=4);$('driftNote').textContent=risk?'보정 부족 경고: 긴 직진 또는 회전으로 엔코더 오차 추정치가 커졌습니다. 가까운 검은선/경계에서 C로 재보정하세요.':'보정 이후 오차 추정치가 허용 참고값 내입니다. 오차는 시각적 추정일 뿐 실제 로봇을 움직이지 않습니다.';$('driftNote').style.color=risk?'#ffd08b':'#bde4d8';
 if(performance.now()>noticeUntil){if(task){$('status').textContent=task.label+' 작동 중 · 남은 '+Math.ceil(task.remaining)+'초 (주행 잠금)';$('status').className=''}else if(risk){$('status').textContent='보정 권장: 위치 ±'+robot.errPos.toFixed(1)+'cm / 방향 ±'+robot.errAng.toFixed(1)+'°. 검은선 감지 시 C 사용';$('status').className='warn'}else if(counts[0]>=2||counts[1]>=2){$('status').textContent='앞/뒤 라인센서에 검은선 또는 경계가 감지됐습니다. C 보정 가능';$('status').className=''}else{$('status').textContent='수동 주행: ↑↓ 전후진 / ←→ 회전 / G 잡기 / M 미션 / C 보정';$('status').className=''}}
 }
