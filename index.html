@@ -34,7 +34,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 </div>
 <div id="demoBox"><b>추천 경로 시험 (기본 배치)</b><p class="small muted">시작 → Food Dispenser에서 사료 10개 적재 → 사료를 실은 채 Pet Hotel까지 주행 → 그릇에 10개 투입 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용합니다. 이 경로는 실제 물체 배치에 맞춘 검증용 예제이며, 다른 미션은 아직 포함하지 않습니다.</p><div class="small" id="demoState">수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.</div></div>
 <div id="status" role="status">방향키를 누르거나 시작 버튼을 눌러 연습을 시작하세요. 자동 경로는 설정되지 않았습니다.</div>
-<div class="instructions"><strong>키보드 조작</strong> — <kbd>↑</kbd> 전진 <kbd>↓</kbd> 후진 <kbd>←</kbd><kbd>→</kbd> 누를 때마다 15°씩 부드럽게 회전 <kbd>Q</kbd><kbd>E</kbd> 90° 회전 <kbd>G</kbd> 앞 팔로 잡기/놓기 <kbd>M</kbd> 가까운 설비 미션 시작 <kbd>C</kbd> 센서 기준 보정 <kbd>Space</kbd> 정지 <kbd>P</kbd> 일시정지 · <kbd>Shift</kbd> 고속 주행</div>
+<div class="instructions"><strong>키보드 조작</strong> — <kbd>↑</kbd> 전진 <kbd>↓</kbd> 후진 <kbd>←</kbd><kbd>→</kbd> 누를 때마다 15°씩 부드럽게 회전 <kbd>Q</kbd><kbd>E</kbd> 90° 회전 <kbd>G</kbd> 3cm 앞 팔로 잡기/놓기 <kbd>M</kbd> 가까운 설비 미션 시작 <kbd>C</kbd> 센서 기준 보정 <kbd>Space</kbd> 정지 <kbd>P</kbd> 일시정지 · <kbd>Shift</kbd> 고속 주행</div>
 <div class="divider"></div>
 <div class="row space" style="margin-bottom:8px"><h2 style="margin:0">화면 터치 조종</h2><span class="muted small">전진·후진은 홀드 / 회전은 1회 15°</span></div>
 <div class="touch">
@@ -63,7 +63,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="metric"><span>사료 (디스펜서 / 로봇 / 호텔)</span><strong id="foodStatus">10 / 0 / 0</strong></div><div class="metric"><span>팔 상태</span><strong id="grip">열림</strong></div>
 <div class="metric"><span>미션 진행</span><strong id="missionState">없음</strong></div>
 <div class="metric"><span>미션 완료</span><strong id="tasks">0 / 7</strong></div><div class="metric"><span>예상 점수</span><strong id="liveScore">—</strong></div>
-<p class="muted small">전체 폭 20cm = 본체 15cm + 좌우 바퀴 두께 각 2.5cm. 차체 길이 25cm, 전·후방 라인 센서 각 7개입니다. 가장자리에서 차체 면적의 절반 미만이 경기장 밖으로 나가도 주행할 수 있습니다. 팔 돌출은 제한하지 않습니다. 50%부터는 추락 방지를 위해 더 이동할 수 없습니다.</p>
+<p class="muted small">전체 폭 20cm = 본체 15cm + 좌우 바퀴 두께 각 2.5cm. 차체 길이 25cm, 전·후방 라인 센서 각 7개입니다. 전면 팔 돌출 3cm. 가장자리에서 차체 면적의 절반 미만이 경기장 밖으로 나가도 주행할 수 있습니다. 팔 돌출은 제한하지 않습니다. 50%부터는 추락 방지를 위해 더 이동할 수 없습니다.</p>
 <p class="note" id="driftNote">엔코더 누적 오차의 예측치만 표시합니다. 주행 위치에 인위적인 오차를 넣지 않습니다.</p>
 </div>
 <div class="section"><h2>물체 위치 조정 (기준 ±2cm)</h2>
@@ -89,6 +89,8 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 const W=182,H=75,FW=222,FH=115,OX=20,OY=20,HALF_L=12.5,HALF_W=10,DEG=Math.PI/180;
 // Chassis: 20cm overall width = 15cm body + 2.5cm left wheel + 2.5cm right wheel.
 const BODY_HALF_W=7.5,WHEEL_WIDTH=2.5,SENSOR_FORWARD=11.1;
+// Front arms extend 3cm from the chassis nose; collision/capture and rendering share these constants.
+const ARM_LENGTH=3,ARM_TIP=HALF_L+ARM_LENGTH,ARM_MOUTH_HALF=6.5;
 const SENSOR_LATERALS=Array.from({length:7},(_,i)=>(i-3)*2.2);
 const $=id=>document.getElementById(id), canvas=$('field'),ctx=canvas.getContext('2d');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),norm=a=>(a%360+360)%360,rad=a=>a*DEG,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -167,9 +169,10 @@ function resolveArmPush(ob){
   // Front-guide contact: circles touched by an open arm are physically displaced, too.
   const ends=[];
   for(const side of [-1,1]){
-    let p1=localToWorld(HALF_L-.8,side*7.1),p2=localToWorld(24.5,side*(robot.gripper?6.2:9.5));
+    let p1=localToWorld(HALF_L-.35,side*7.1);
+    let p2=localToWorld(ARM_TIP-(robot.gripper?.65:0),side*(robot.gripper?6.0:8.0));
     ends.push([p1,p2]);
-    if(robot.gripper)ends.push([p2,localToWorld(25.2,side*4.5)]);
+    if(robot.gripper)ends.push([p2,localToWorld(ARM_TIP,side*4.5)]);
   }
   for(const [a,b] of ends){
     let vx=b.x-a.x,vy=b.y-a.y,den=vx*vx+vy*vy;
@@ -183,7 +186,7 @@ function resolveArmPush(ob){
   }
   return true
 }
-function armTarget(){const f=HALF_L+6;return localToWorld(f,0)}
+function armTarget(){return localToWorld(ARM_TIP,0)}
 function heldUpdate(){
   for(const id of robot.held){const ob=world.objects.find(o=>o.id===id),slot=robot.slots[id];if(!ob||!slot)continue;
     const q=localToWorld(slot.f,slot.l),before={x:ob.x,y:ob.y};ob.x=q.x;ob.y=q.y;
@@ -198,7 +201,7 @@ function capturePocket(){
     if(robot.held.includes(ob.id))continue;
     const p=worldToLocal(ob);
     // Preserve actual offset of each object; no limit of one object.
-    if(p.f>=HALF_L-1.5 && p.f<=HALF_L+13.5 && Math.abs(p.l)<=8.7+ob.r*.25){
+    if(p.f>=HALF_L-1.5 && p.f<=ARM_TIP+ob.r*.35 && Math.abs(p.l)<=ARM_MOUTH_HALF+ob.r*.3){
       robot.held.push(ob.id);robot.slots[ob.id]={f:p.f,l:p.l};newOnes.push(ob.label)
     }
   }
@@ -313,7 +316,14 @@ function finishGame(){
   $('resultNote').textContent=(over?(trialResult.limit?'120초 시점의 참고 점수: '+trialResult.limit.total+'점. ':'120초 시점 기록 없음. '):'')+'공식 채점표의 배점을 따른 단순화된 판정입니다. 출발·종료 UTF는 임의로 설정했으며 충돌에 따른 손상·사료 개별 수량·집게 물리학은 완전 구현되지 않았습니다.';
   $('results').classList.add('show');say('경기 종료 · '+score.total+'점'+(over?' (시간 초과)':''),'ok',true)
 }
-function missionNear(f){let delta=worldToLocal(f);let distanceToFront=Math.hypot(delta.f-(HALF_L+8),Math.max(0,Math.abs(delta.l)-6));return distanceToFront<11&&delta.f>4}
+function missionNear(f){
+ const delta=worldToLocal(f),v=vec(robot.a);
+ const forwardExtent=f.shape==='circle'?f.r:Math.abs(v.x)*f.w/2+Math.abs(v.y)*f.h/2;
+ const lateralExtent=f.shape==='circle'?f.r:Math.abs(v.y)*f.w/2+Math.abs(v.x)*f.h/2;
+ const nearestFace=delta.f-forwardExtent;
+ const lateralGap=Math.max(0,Math.abs(delta.l)-lateralExtent-ARM_MOUTH_HALF);
+ return nearestFace>=HALF_L-.8&&nearestFace<=ARM_TIP+1.5&&lateralGap<=1.5;
+}
 function beginTask(){if(replay||task||ended||trialResult)return;let allowed=world.fixtures.filter(missionNear).sort((a,b)=>dist(a,armTarget())-dist(b,armTarget()));let f=allowed[0];if(!f){say('팔 전방에 설비가 없습니다. 몸체가 아닌 전방 팔이 설비 쪽을 향하게 접근하세요','warn',true);return}
 if(achievements[f.id]||(f.id==='hotel'&&achievements.hotel)){say(f.label+' 미션은 이미 수행했습니다','warn');return}
 if(f.id==='hotel'&&foodCounts().carried===0){say('먼저 Food Dispenser에서 사료를 수거해서 로봇으로 운반해야 합니다','warn',true);return}
@@ -363,16 +373,16 @@ function brake(){robot.v=0;robot.omega=0;robot.autoAngle=null;keys={};say('모�
 const demoRoute=[
  {kind:'drive',axis:'x',to:57,label:'서쪽 26cm → 디스펜서 접근'},
  {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
- {kind:'drive',axis:'y',to:29,label:'디스펜서 정렬'},
+ {kind:'drive',axis:'y',to:24,label:'디스펜서 3cm 팔 접근 거리까지 정렬'},
  {kind:'task',id:'food',label:'사료 수거 12초'},
  {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
- {kind:'drive',axis:'x',to:100,label:'펫호텔 접근'},
+ {kind:'drive',axis:'x',to:107,label:'펫호텔 그릇 앞 3cm 팔 접근'},
  {kind:'task',id:'hotel',label:'사료 배달 8초'},
  {kind:'drive',axis:'x',to:85,label:'호텔에서 13cm 후진 · 배설물 회피'},
  {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
  {kind:'drive',axis:'y',to:18.5,label:'호텔 위쪽 통로 진입'},
  {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
- {kind:'drive',axis:'x',to:143,label:'호텔 위쪽 좁은 통로 통과 → Pet Toy'},
+ {kind:'drive',axis:'x',to:150,label:'호텔 위쪽 좁은 통로 통과 → Pet Toy 3cm 팔 접근'},
  {kind:'task',id:'toy',label:'Pet Toy 작업 18초'},
  {kind:'drive',axis:'x',to:85,label:'좁은 통로로 후진'},
  {kind:'turn',angle:90,label:'남쪽으로 90° 회전'},
@@ -419,7 +429,7 @@ function saveResult(){
   a.href=u;a.download='robofest2027_trial_score.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)
 }
 // Exposed solely for deterministic browser-based regression tests and reproducible route validation.
-window.__rfTest={advance:(dt)=>advance(dt),startDemo,finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),food:foods.map(f=>({...f})),foodCounts:foodCounts(),sensors:sensorStates(),result:trialResult,routeIndex,routeMessage,task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction};
+window.__rfTest={advance:(dt)=>advance(dt),startDemo,finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),armLength:ARM_LENGTH,food:foods.map(f=>({...f})),foodCounts:foodCounts(),sensors:sensorStates(),result:trialResult,routeIndex,routeMessage,task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction,missionNear};
 function draw(){let viewport=canvas.getBoundingClientRect(),pix=window.devicePixelRatio||1,cw=Math.max(1,Math.round(viewport.width*pix)),ch=Math.max(1,Math.round(viewport.height*pix));if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(cw/FW,0,0,ch/FH,OX*cw/FW,OY*ch/FH);ctx.clearRect(-OX,-OY,FW,FH);ctx.fillStyle='#e9f1f3';ctx.fillRect(-OX,-OY,FW,FH);
 function rect(x,y,w,h,fill,stroke,sw=.5){ctx.beginPath();ctx.rect(x,y,w,h);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
 function circle(x,y,r,fill,stroke,sw=.5){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
@@ -464,7 +474,7 @@ for(const f of foods){
 // forward direction triangle
 ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(4,-3.5);ctx.lineTo(4,3.5);ctx.closePath();ctx.fillStyle='#d7fff6';ctx.fill();
 ctx.font='600 3.5px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#efffff';ctx.fillText('7kg',-2,0);if(robot.held.length){ctx.font='600 2.6px system-ui';ctx.fillText('×'+robot.held.length,16,-13)}
-const armOuter=robot.gripper?6.2:9.5;ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(HALF_L-.8,side*7.1);ctx.lineTo(24.5,side*armOuter);if(robot.gripper)ctx.lineTo(25.2,side*4.5);ctx.stroke()}
+ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(HALF_L-.35,side*7.1);ctx.lineTo(ARM_TIP-(robot.gripper?.65:0),side*(robot.gripper?6.0:8.0));if(robot.gripper)ctx.lineTo(ARM_TIP,side*4.5);ctx.stroke()}
 // Front and rear line-tracking sensor arrays, 7 channels each.
 const sense=sensorStates();
 for(const side of [1,-1]){
