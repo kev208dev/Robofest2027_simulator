@@ -64,6 +64,7 @@ with sync_playwright() as playwright:
     page.evaluate("window.__rfTest.reset()")
     sensors = page.evaluate("window.__rfTest.getState().sensors")
     assert len(sensors["front"]) == 7 and len(sensors["back"]) == 7, sensors
+    page.wait_for_function("document.getElementById('sensors').textContent.includes('/7')")
     assert page.locator("#sensors").inner_text().endswith("/7 · 0/7")
     # Align front array with the black vertical start line at x=82cm.
     assert page.evaluate("window.__rfTest.setPose(95.3, 37.5, 180)") is True
