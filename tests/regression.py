@@ -46,6 +46,13 @@ with sync_playwright() as playwright:
     assert page.evaluate("window.__rfTest.getState().t") > 120
     print("Overtime result: OK")
 
+    # Chassis is 20cm wide and 25cm long (wheels included in the width).
+    page.evaluate("window.__rfTest.reset()")
+    assert page.evaluate("window.__rfTest.bodyOutsideFraction(12.5, 37.5, 0)") < 1e-7
+    assert abs(page.evaluate("window.__rfTest.bodyOutsideFraction(0, 37.5, 0)") - 0.5) < 1e-7
+    assert page.locator("header").inner_text().find("길이 25cm") >= 0
+    print("Robot chassis size 20x25cm: OK")
+
     # Partial chassis overhang is legal; exactly 50% outside is not.
     page.evaluate("window.__rfTest.reset()")
     overhang = page.evaluate("window.__rfTest.bodyOutsideFraction(0.1, 30, 0)")
@@ -67,7 +74,7 @@ with sync_playwright() as playwright:
     page.wait_for_function("document.getElementById('sensors').textContent.includes('/7')")
     assert page.locator("#sensors").inner_text().endswith("/7 · 0/7")
     # Align front array with the black vertical start line at x=82cm.
-    assert page.evaluate("window.__rfTest.setPose(95.3, 37.5, 180)") is True
+    assert page.evaluate("window.__rfTest.setPose(93.1, 37.5, 180)") is True
     sensor_hits = page.evaluate("window.__rfTest.getState().sensors")
     assert sum(bool(s["hit"]) for s in sensor_hits["front"]) == 7, sensor_hits
     assert sum(bool(s["hit"]) for s in sensor_hits["back"]) == 0, sensor_hits
