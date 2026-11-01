@@ -1,0 +1,66 @@
+"""Browser regression tests for the ROBOFEST 2027 simulator.
+
+Run:
+    pip install playwright
+    python -m playwright install chromium
+    python tests/regression.py
+"""
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+
+HTML = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+
+with sync_playwright() as playwright:
+    browser = playwright.chromium.launch(headless=True)
+    page = browser.new_page(viewport={"width": 1500, "height": 950})
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.set_content(HTML, wait_until="load")
+
+    # The front gripper can capture more than one object at once.
+    page.evaluate("window.__rfTest.reset()")
+    page.evaluate("window.__rfTest.setPose(147.5,60,180)")
+    page.evaluate("window.__rfTest.grab()")
+    held = page.evaluate("window.__rfTest.getState().robot.held")
+    assert "cat1" in held and "cat2" in held, held
+    print("Multiple-object capture: OK")
+
+    # Each arrow-key press queues a smooth 15-degree turn.
+    page.evaluate("window.__rfTest.reset()")
+    page.keyboard.press("ArrowRight")
+    page.keyboard.press("ArrowRight")
+    rotation = page.evaluate("window.__rfTest.getState().robot")
+    assert rotation["autoAngle"] == 210, rotation
+    page.evaluate("window.__rfTest.advance(3)")
+    rotation = page.evaluate("window.__rfTest.getState().robot")
+    assert abs(rotation["a"] - 210) < 0.6, rotation
+    print("Incremental rotation: OK")
+
+    # The session continues after 120s, and finishing reports overtime.
+    page.evaluate("window.__rfTest.reset()")
+    page.locator("#start").click()
+    page.evaluate("window.__rfTest.advance(121)")
+    page.locator("#finish").click()
+    overtime = page.locator("#resultStatus").inner_text()
+    assert "시간 초과" in overtime, overtime
+    assert page.evaluate("window.__rfTest.getState().t") > 120
+    print("Overtime result: OK")
+
+    # Verify the reference route on the default object layout.
+    page.locator("#newTrial").click()
+    page.locator("#demo").click()
+    result = page.evaluate("""() => {
+        for (let i = 0; i < 2300; i++) {
+            window.__rfTest.advance(0.1);
+            const state = window.__rfTest.getState();
+            if (state.result || (state.routeIndex === -1 && i > 4))
+                return state;
+        }
+        return window.__rfTest.getState();
+    }""")
+    assert result["result"], result["routeMessage"]
+    assert result["score"]["total"] == 61, result["score"]
+    assert not errors, errors
+    print("Default reference route: 61/100 points, %.2fs" % result["t"])
+    print("All regression tests passed.")
+    browser.close()
