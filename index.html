@@ -55,12 +55,14 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="metric"><span>추정 위치 오차</span><strong id="positionError">±0.0 cm</strong></div>
 <div class="metric"><span>추정 방향 오차</span><strong id="headingError">±0.0°</strong></div>
 <div class="metric"><span>경기장 밖 차체 면적</span><strong id="overhang">0.0% / 50%</strong></div>
-<div class="metric"><span>센서 앞 / 뒤</span><strong id="sensors">— / —</strong></div>
+<div class="metric"><span>센서 앞 / 뒤 (각 7개)</span><strong id="sensors">— / —</strong></div>
+<div class="metric"><span>전면 7채널</span><strong id="sensorFrontDots" aria-label="전면 센서 7개 상태">○ ○ ○ ○ ○ ○ ○</strong></div>
+<div class="metric"><span>후면 7채널</span><strong id="sensorBackDots" aria-label="후면 센서 7개 상태">○ ○ ○ ○ ○ ○ ○</strong></div>
 <div class="metric"><span>보정 횟수</span><strong id="corrections">0회</strong></div>
 <div class="metric"><span>집은 물체 수</span><strong id="heldCount">0개</strong></div><div class="metric"><span>팔 상태</span><strong id="grip">열림</strong></div>
 <div class="metric"><span>미션 진행</span><strong id="missionState">없음</strong></div>
 <div class="metric"><span>미션 완료</span><strong id="tasks">0 / 7</strong></div><div class="metric"><span>예상 점수</span><strong id="liveScore">—</strong></div>
-<p class="muted small">가장자리에서 차체 면적의 절반 미만이 경기장 밖으로 나가도 주행할 수 있습니다. 팔 돌출은 제한하지 않습니다. 50%부터는 추락 방지를 위해 더 이동할 수 없습니다.</p>
+<p class="muted small">전체 폭 20cm = 본체 15cm + 좌우 바퀴 두께 각 2.5cm. 길이 30cm, 전·후방 라인 센서 각 7개입니다. 가장자리에서 차체 면적의 절반 미만이 경기장 밖으로 나가도 주행할 수 있습니다. 팔 돌출은 제한하지 않습니다. 50%부터는 추락 방지를 위해 더 이동할 수 없습니다.</p>
 <p class="note" id="driftNote">엔코더 누적 오차의 예측치만 표시합니다. 주행 위치에 인위적인 오차를 넣지 않습니다.</p>
 </div>
 <div class="section"><h2>물체 위치 조정 (기준 ±2cm)</h2>
@@ -84,6 +86,9 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <script>
 (()=>{'use strict';
 const W=182,H=75,FW=222,FH=115,OX=20,OY=20,HALF_L=15,HALF_W=10,DEG=Math.PI/180;
+// Chassis: 20cm overall width = 15cm body + 2.5cm left wheel + 2.5cm right wheel.
+const BODY_HALF_W=7.5,WHEEL_WIDTH=2.5,SENSOR_FORWARD=13.3;
+const SENSOR_LATERALS=Array.from({length:7},(_,i)=>(i-3)*2.2);
 const $=id=>document.getElementById(id), canvas=$('field'),ctx=canvas.getContext('2d');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),norm=a=>(a%360+360)%360,rad=a=>a*DEG,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const world={fixtures:[{id:'food',label:'사료 디스펜서',x:57,y:4,ox:57,oy:4,shape:'rect',w:12,h:8,color:'#679bbd'},
@@ -147,7 +152,7 @@ function resolveArmPush(ob){
   // Front-guide contact: circles touched by an open arm are physically displaced, too.
   const ends=[];
   for(const side of [-1,1]){
-    let p1=localToWorld(14.2,side*8),p2=localToWorld(24.5,side*(robot.gripper?6.2:9.5));
+    let p1=localToWorld(14.2,side*7.1),p2=localToWorld(24.5,side*(robot.gripper?6.2:9.5));
     ends.push([p1,p2]);
     if(robot.gripper)ends.push([p2,localToWorld(25.2,side*4.5)]);
   }
@@ -198,8 +203,28 @@ function tryPose(x,y,a){
   capturePocket();
   return null
 }
-function sensorStates(){let readings=[];for(const side of [1,-1]){let hits=[];for(let lateral of [-7.5,0,7.5]){let p=localToWorld(side*13.3,lateral);let hit=null;const edge=Math.min(p.x,p.y,W-p.x,H-p.y);if(edge<2.5)hit='경계';for(const [x1,y1,x2,y2] of lines){let vx=x2-x1,vy=y2-y1,len=vx*vx+vy*vy,q=clamp(((p.x-x1)*vx+(p.y-y1)*vy)/len,0,1),d=Math.hypot(p.x-(x1+q*vx),p.y-(y1+q*vy));if(d<1.5)hit='검은선'}hits.push({p,hit})}readings.push(hits)}return {front:readings[0],back:readings[1]}}
-function correct(){if(replay)return;let s=sensorStates(),groups=[s.front,s.back],count=groups.map(g=>g.filter(p=>p.hit).length);if(Math.max(...count)>=2){robot.errPos=.35;robot.errAng=.45;robot.uncorrected=0;robot.corrections++;say('센서 배열 2개 이상 감지: 엔코더 위치·방향 오차 재설정 (실제 정렬 알고리즘은 별도 필요)','ok',true)}else if(count[0]+count[1]>0){say('센서 일부만 감지됐습니다. 앞/뒤 배열을 검은선에 더 정확히 정렬하세요.','warn',true)}else say('보정 기준선 또는 테이블 끝을 감지하지 못했습니다. C 보정 불가','warn',true)}
+function sensorStates(){
+  const readings=[];
+  for(const side of [1,-1]){
+    const hits=[];
+    for(const lateral of SENSOR_LATERALS){
+      const p=localToWorld(side*SENSOR_FORWARD,lateral);
+      let hit=null;
+      const edge=Math.min(p.x,p.y,W-p.x,H-p.y);
+      if(edge<2.5)hit='경계';
+      for(const [x1,y1,x2,y2] of lines){
+        const vx=x2-x1,vy=y2-y1,len=vx*vx+vy*vy;
+        const q=clamp(((p.x-x1)*vx+(p.y-y1)*vy)/len,0,1);
+        const d=Math.hypot(p.x-(x1+q*vx),p.y-(y1+q*vy));
+        if(d<1.5)hit='검은선';
+      }
+      hits.push({p,hit});
+    }
+    readings.push(hits);
+  }
+  return {front:readings[0],back:readings[1]};
+}
+function correct(){if(replay)return;let s=sensorStates(),groups=[s.front,s.back],count=groups.map(g=>g.filter(p=>p.hit).length);if(Math.max(...count)>=5){robot.errPos=.35;robot.errAng=.45;robot.uncorrected=0;robot.corrections++;say('7채널 배열에서 5개 이상 동시 감지: 엔코더 위치·방향 오차 추정치 초기화 (실제 정렬 알고리즘은 별도 필요)','ok',true)}else if(count[0]+count[1]>0){say('센서 일부만 감지됐습니다. 7개 중 5개 이상이 같은 경계·검은선 위에 오도록 정렬하세요.','warn',true)}else say('보정 기준선 또는 테이블 끝을 감지하지 못했습니다. C 보정 불가','warn',true)}
 function toggleGrip(){
   if(replay||task||trialResult)return;
   if(robot.gripper){
@@ -360,7 +385,7 @@ function saveResult(){
   a.href=u;a.download='robofest2027_trial_score.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)
 }
 // Exposed solely for deterministic browser-based regression tests and reproducible route validation.
-window.__rfTest={advance:(dt)=>advance(dt),startDemo,finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),result:trialResult,routeIndex,routeMessage,task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction};
+window.__rfTest={advance:(dt)=>advance(dt),startDemo,finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),sensors:sensorStates(),result:trialResult,routeIndex,routeMessage,task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction};
 function draw(){let viewport=canvas.getBoundingClientRect(),pix=window.devicePixelRatio||1,cw=Math.max(1,Math.round(viewport.width*pix)),ch=Math.max(1,Math.round(viewport.height*pix));if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(cw/FW,0,0,ch/FH,OX*cw/FW,OY*ch/FH);ctx.clearRect(-OX,-OY,FW,FH);ctx.fillStyle='#e9f1f3';ctx.fillRect(-OX,-OY,FW,FH);
 function rect(x,y,w,h,fill,stroke,sw=.5){ctx.beginPath();ctx.rect(x,y,w,h);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
 function circle(x,y,r,fill,stroke,sw=.5){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
@@ -381,13 +406,27 @@ ctx.restore(); // Field clipping ends here: allow robot body and arms to render 
 // Confidence halo represents accumulated encoder uncertainty; no movement perturbation.
 if(robot.errPos>1){ctx.save();ctx.setLineDash([1.6,1.1]);ctx.strokeStyle='rgba(211,91,42,.75)';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(robot.x,robot.y,Math.min(robot.errPos,28),0,Math.PI*2);ctx.stroke();ctx.restore()}
 // Draw full 20 x 30 robot and front arms.
-ctx.save();ctx.translate(robot.x,robot.y);ctx.rotate(rad(robot.a));rect(-15,-10,30,20,'#0b6577','#063d4d',.7);rect(-9,-11.5,18,1.5,'#233a47');rect(-9,10,18,1.5,'#233a47');rect(-11.5,-8,22,16,'rgba(14,108,121,.45)');
+ctx.save();ctx.translate(robot.x,robot.y);ctx.rotate(rad(robot.a));
+// Distinct left/right wheels occupy 2.5cm each; central chassis is 15cm wide.
+rect(-9,-10,18,WHEEL_WIDTH,'#263843','#14242e',.5);
+rect(-9,BODY_HALF_W,18,WHEEL_WIDTH,'#263843','#14242e',.5);
+rect(-15,-BODY_HALF_W,30,2*BODY_HALF_W,'#0b6577','#063d4d',.7);
+rect(-11.5,-5.8,22,11.6,'rgba(14,108,121,.45)');
 // forward direction triangle
 ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(4,-3.5);ctx.lineTo(4,3.5);ctx.closePath();ctx.fillStyle='#d7fff6';ctx.fill();
 ctx.font='600 3.5px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#efffff';ctx.fillText('7kg',-2,0);if(robot.held.length){ctx.font='600 2.6px system-ui';ctx.fillText('×'+robot.held.length,16,-13)}
-const armOuter=robot.gripper?6.2:9.5;ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(14.2,side*8);ctx.lineTo(24.5,side*armOuter);if(robot.gripper)ctx.lineTo(25.2,side*4.5);ctx.stroke()}
-// front and rear sensor bars, each 3 points
-const sense=sensorStates();for(let j=0;j<2;j++){const front=j===0;for(let k=0;k<3;k++){let h=(front?sense.front:sense.back)[k],local={f:front?13.3:-13.3,l:[-7.5,0,7.5][k]};circle(local.f,local.l,1.0,h.hit?'#f77853':'#7cffd8',h.hit?'#bd3c24':'#0c8f76',.23)}}
+const armOuter=robot.gripper?6.2:9.5;ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(14.2,side*7.1);ctx.lineTo(24.5,side*armOuter);if(robot.gripper)ctx.lineTo(25.2,side*4.5);ctx.stroke()}
+// Front and rear line-tracking sensor arrays, 7 channels each.
+const sense=sensorStates();
+for(const side of [1,-1]){
+  const front=side===1,bank=front?sense.front:sense.back;
+  ctx.strokeStyle='#b5e0d9';ctx.lineWidth=.45;
+  ctx.beginPath();ctx.moveTo(side*SENSOR_FORWARD,SENSOR_LATERALS[0]-.6);ctx.lineTo(side*SENSOR_FORWARD,SENSOR_LATERALS[6]+.6);ctx.stroke();
+  for(let k=0;k<7;k++){
+    const h=bank[k];
+    circle(side*SENSOR_FORWARD,SENSOR_LATERALS[k],.68,h.hit?'#f77853':'#7cffd8',h.hit?'#bd3c24':'#0c8f76',.18);
+  }
+}
 ctx.restore();
 // editing selection plus/minus 2cm guide
 let selectedObj=allObjects().find(o=>o.id===selected);if(selectedObj){ctx.save();ctx.strokeStyle='rgba(34,119,184,.7)';ctx.setLineDash([1.2,1.2]);rect(selectedObj.ox-2,selectedObj.oy-2,4,4,null,'#267caa',.6);ctx.restore()}
@@ -396,9 +435,13 @@ label('182 cm',W/2,81,3.2,'#3a5867','center');label('75 cm',-3,H/2,2.6,'#3a5867'
 }
 function updateHUD(){let s=sensorStates(),counts=[s.front,s.back].map(g=>g.filter(o=>o.hit).length),dir=['동','남','서','북'][Math.round(norm(robot.a)/90)%4];$('pose').textContent=`X ${robot.x.toFixed(1)} · Y ${robot.y.toFixed(1)} · ${dir} ${norm(robot.a).toFixed(0)}°`;
 $('timer').innerHTML=timeText(t)+' <span class="muted">/ 02:00</span>';$('timebar').style.width=Math.min(100,t/120*100)+'%';$('timebar').style.background=t>120?'#ef9564':'linear-gradient(90deg,#36b88f,#c5e899)';$('sessionBadge').textContent=replay?'기록 재생':ended?'경기 종료':t>120?'시간 초과 · 연습 지속':task?'설비 작동':running?'주행 중':'일시정지 / 대기';
-$('velocity').textContent=robot.v.toFixed(1)+' cm/s';$('distance').textContent=robot.distance.toFixed(1)+' cm';$('rotation').textContent=robot.turn.toFixed(0)+'°';$('uncorrected').textContent=robot.uncorrected.toFixed(1)+' cm';$('positionError').textContent='±'+robot.errPos.toFixed(1)+' cm';$('headingError').textContent='±'+robot.errAng.toFixed(1)+'°';$('sensors').textContent=counts[0]+'/3 · '+counts[1]+'/3';$('corrections').textContent=robot.corrections+'회';const outside=bodyOutsideFraction();$('overhang').textContent=(outside*100).toFixed(1)+'% / 50%';$('overhang').style.color=outside>=.35?'#ff817f':outside>=.15?'#f2c66a':'#eef7f8';$('grip').textContent=robot.held.length?'포획 ('+robot.held.map(id=>world.objects.find(o=>o.id===id)?.label).join(', ')+')':robot.gripper?'닫힘 (빈 팔)':'열림';$('missionState').textContent=task?task.label+' · '+Math.ceil(task.remaining)+'초':achievements.food&&!achievements.hotel?'사료 보유': '대기';$('tasks').textContent=Object.values(achievements).filter(Boolean).length+' / 7';$('heldCount').textContent=robot.held.length+'개';$('liveScore').textContent=scoring().total+' / 100';
+$('velocity').textContent=robot.v.toFixed(1)+' cm/s';$('distance').textContent=robot.distance.toFixed(1)+' cm';$('rotation').textContent=robot.turn.toFixed(0)+'°';$('uncorrected').textContent=robot.uncorrected.toFixed(1)+' cm';$('positionError').textContent='±'+robot.errPos.toFixed(1)+' cm';$('headingError').textContent='±'+robot.errAng.toFixed(1)+'°';$('sensors').textContent=counts[0]+'/7 · '+counts[1]+'/7';
+$('sensorFrontDots').textContent=s.front.map(p=>p.hit?'●':'○').join(' ');
+$('sensorBackDots').textContent=s.back.map(p=>p.hit?'●':'○').join(' ');
+$('sensorFrontDots').style.color=counts[0]>=5?'#55d6a0':counts[0]?'#f2c66a':'#abc8d3';
+$('sensorBackDots').style.color=counts[1]>=5?'#55d6a0':counts[1]?'#f2c66a':'#abc8d3';$('corrections').textContent=robot.corrections+'회';const outside=bodyOutsideFraction();$('overhang').textContent=(outside*100).toFixed(1)+'% / 50%';$('overhang').style.color=outside>=.35?'#ff817f':outside>=.15?'#f2c66a':'#eef7f8';$('grip').textContent=robot.held.length?'포획 ('+robot.held.map(id=>world.objects.find(o=>o.id===id)?.label).join(', ')+')':robot.gripper?'닫힘 (빈 팔)':'열림';$('missionState').textContent=task?task.label+' · '+Math.ceil(task.remaining)+'초':achievements.food&&!achievements.hotel?'사료 보유': '대기';$('tasks').textContent=Object.values(achievements).filter(Boolean).length+' / 7';$('heldCount').textContent=robot.held.length+'개';$('liveScore').textContent=scoring().total+' / 100';
 let risk=(robot.errPos>=3||robot.errAng>=4);$('driftNote').textContent=risk?'보정 부족 경고: 긴 직진 또는 회전으로 엔코더 오차 추정치가 커졌습니다. 가까운 검은선/경계에서 C로 재보정하세요.':'보정 이후 오차 추정치가 허용 참고값 내입니다. 오차는 시각적 추정일 뿐 실제 로봇을 움직이지 않습니다.';$('driftNote').style.color=risk?'#ffd08b':'#bde4d8';
-if(performance.now()>noticeUntil){if(task){$('status').textContent=task.label+' 작동 중 · 남은 '+Math.ceil(task.remaining)+'초 (주행 잠금)';$('status').className=''}else if(risk){$('status').textContent='보정 권장: 위치 ±'+robot.errPos.toFixed(1)+'cm / 방향 ±'+robot.errAng.toFixed(1)+'°. 검은선 감지 시 C 사용';$('status').className='warn'}else if(counts[0]>=2||counts[1]>=2){$('status').textContent='앞/뒤 라인센서에 검은선 또는 경계가 감지됐습니다. C 보정 가능';$('status').className=''}else{$('status').textContent='수동 주행: ↑↓ 전후진 / ←→ 회전 / G 잡기 / M 미션 / C 보정';$('status').className=''}}
+if(performance.now()>noticeUntil){if(task){$('status').textContent=task.label+' 작동 중 · 남은 '+Math.ceil(task.remaining)+'초 (주행 잠금)';$('status').className=''}else if(risk){$('status').textContent='보정 권장: 위치 ±'+robot.errPos.toFixed(1)+'cm / 방향 ±'+robot.errAng.toFixed(1)+'°. 검은선 감지 시 C 사용';$('status').className='warn'}else if(counts[0]>=5||counts[1]>=5){$('status').textContent='앞/뒤 라인센서에 검은선 또는 경계가 감지됐습니다. C 보정 가능';$('status').className=''}else{$('status').textContent='수동 주행: ↑↓ 전후진 / ←→ 회전 / G 잡기 / M 미션 / C 보정';$('status').className=''}}
 }
 let lastHUD=0;
 function advance(dt){
