@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROBOFEST 2027 · 수동 주행 & 미션 연습 시뮬레이터</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif;--bg:#09131b;--panel:#132431;--panel2:#1a3140;--line:#324f5e;--text:#eef7f8;--muted:#adc3ce;--green:#55d6a0;--amber:#f2c66a;--red:#ff817f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 30% 0,#183443,#08131c 75%);color:var(--text)}
+main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,2.8vw,30px);letter-spacing:-.03em}h2{font-size:14px;margin:0 0 11px;color:#e9f1f7}p{margin:6px 0;line-height:1.5}.muted{color:var(--muted)}.small{font-size:12px}.kicker{color:#69cdb1;font-size:12px;font-weight:650;letter-spacing:.09em;text-transform:uppercase}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 342px;gap:14px;margin-top:15px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px;min-width:0}.canvas-wrap{background:#e7f0f2;border-radius:12px;overflow:hidden;position:relative;line-height:0}canvas{display:block;width:100%;aspect-ratio:196/99;touch-action:none;cursor:crosshair}button,input,select{font:inherit}button{border-radius:9px;color:var(--text);background:#284354;border:1px solid #4a6776;padding:9px 12px;font-size:12px;font-weight:600;cursor:pointer}button:hover{filter:brightness(1.16)}button:active{transform:translateY(1px)}button.primary{background:#087f72;border-color:#4fbfa6}button.warning{background:#654534;border-color:#a67d3e}button:disabled{opacity:.4;cursor:not-allowed}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.space{justify-content:space-between}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0}.chip{padding:6px 9px;border:1px solid #355467;border-radius:50px;background:#1d3746;color:#c5d7dc;font-size:11px}.chip strong{color:white}.timer{font-variant-numeric:tabular-nums;font-size:20px;font-weight:750}.timer .muted{font-size:12px;font-weight:400}.bar{height:7px;border-radius:10px;background:#264455;overflow:hidden}.bar div{height:100%;width:0;background:linear-gradient(90deg,#36b88f,#c5e899)}
+#status{padding:10px 11px;background:#224537;border-left:4px solid var(--green);border-radius:8px;color:#d8f7e8;font-size:12px;min-height:37px;line-height:1.45;margin-top:10px}#status.warn{background:#4f3c27;border-color:var(--amber);color:#ffe9c4}#status.bad{background:#4e3037;border-color:var(--red);color:#ffe4e0}
+.controls{margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.controls .timer{margin-left:auto}.speedSel{border:1px solid #526e77;background:#233e4c;color:var(--text);border-radius:7px;padding:7px;font-size:12px}.instructions{margin:12px 0 0;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:#d5e1e4;line-height:1.9}.instructions kbd{display:inline-block;min-width:23px;text-align:center;background:#375263;border:1px solid #68808c;border-bottom-width:3px;padding:0px 4px;border-radius:5px;color:#fff;font:600 11px system-ui;line-height:20px}.compact{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.touch button{min-height:39px;touch-action:none}.touch button.held{background:#0a8e7e}.touch .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.touch .actions button{flex:1;white-space:nowrap}.section{padding:12px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:12px}.metric{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #33515e;font-size:12px}.metric:last-child{border:0}.metric strong{font-variant-numeric:tabular-nums;color:#fff}.pill{display:inline-block;border-radius:20px;padding:3px 7px;background:#285f52;color:#c7f9e5;font-size:11px;font-weight:700}.pill.warn{background:#72532e;color:#ffe3ae}.pill.bad{background:#793b47;color:#fff}.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.setting label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}.setting input,.setting select{width:100%;min-width:0;background:#172b39;color:white;border:1px solid #507080;border-radius:7px;padding:7px;font-size:12px}.setting input[type=range]{padding:0;accent-color:var(--green);height:20px}.check{font-size:12px;display:flex;align-items:center;gap:6px}.check input{accent-color:var(--green)}.log{height:120px;overflow-y:auto;font-size:11px;line-height:1.7;color:#bdd2d9;padding:8px;background:#112531;border-radius:8px}.log div{border-bottom:1px solid #234352;padding:3px 0}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:9px}.legend i{width:13px;height:9px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:5px}.footer{font-size:11px;color:#9fb4c0;margin-top:12px;line-height:1.7}.divider{height:1px;background:#365261;margin:12px 0}.note{font-size:12px;line-height:1.55;color:#e8ce93}.full{width:100%}.rightbuttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}.empty{visibility:hidden}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.rightside{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rightside>.section{margin-bottom:0}.rightside>.section:last-child{grid-column:1/-1}}
+@media(max-width:600px){main{padding:9px}.card{padding:10px}.rightside{display:block}.rightside>.section{margin-bottom:10px}.timer{font-size:17px}.instructions{font-size:11px}.controls button{padding:8px}.controls .timer{margin-left:0}}
+
+#results{position:fixed;inset:0;background:rgba(3,13,20,.80);z-index:50;display:none;align-items:center;justify-content:center;padding:15px;backdrop-filter:blur(4px)}
+#results.show{display:flex}#results .sheet{background:#122937;border:1px solid #6a9693;border-radius:18px;padding:22px;max-width:620px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 25px 90px #0008}
+#results .total{font-size:42px;font-weight:800;color:#78e3bb;letter-spacing:-.05em}#results .scorelist{display:grid;grid-template-columns:1fr auto;gap:7px 16px;font-size:13px;margin:17px 0}#results .scorelist div{padding:4px 0;border-bottom:1px solid #34515b}#results .overtime{color:#ffc080;background:#493222;border-radius:8px;padding:9px;font-weight:bold}#results .ontime{color:#9ce9b8;background:#25483a;border-radius:8px;padding:9px;font-weight:bold}
+#demoBox{background:#183a43;border:1px solid #387b81;padding:12px;border-radius:11px;margin:10px 0}#demoBox .small{line-height:1.6}
+</style>
+</head>
+<body>
+<main>
+<header><div class="kicker">ROBOFEST 2027 · Robot route lab</div><h1>직접 주행하는 미션 시뮬레이터</h1><p class="muted small">경기장 182×75cm · 로봇 폭 20cm × 길이 30cm · 무게 7kg 가정 · 앞/뒤 라인 센서 · 120초 유효 시간 · 시간초과 후에도 실험 가능</p></header>
+<div class="layout">
+<section class="card">
+<div class="row space" style="margin-bottom:9px"><div class="row"><span class="pill" id="sessionBadge">출발 대기</span><span class="small muted" id="pose">X 83.0 · Y 37.5 · 서쪽</span></div><div class="timer" id="timer">00:00 <span class="muted">/ 02:00</span></div></div>
+<div class="bar"><div id="timebar"></div></div>
+<div class="canvas-wrap"><canvas id="field" width="1120" height="566" tabindex="0" aria-label="182×75cm 경기장. 로봇은 키보드 방향키로 조종하고 G로 물체를 잡을 수 있습니다"></canvas></div>
+<div class="legend"><span><i style="background:#007847"></i>최근 주행 영역(폭 20cm)</span><span><i style="background:#f2b654"></i>앞 팔·집게</span><span><i style="background:#f78f73"></i>위치·방향 불확실성</span><span><i style="background:#191e24"></i>검은선</span></div>
+<div class="controls">
+<button class="primary" id="start">▶ 시작 / 재개</button><button id="pause">Ⅱ 일시정지</button><button id="finish" class="warning">■ 경기 종료 · 채점</button><button id="restart">↺ 로봇 초기화</button><button id="demo" class="primary">▶ 추천 경로 시험</button><button id="random">±2cm 랜덤 배치</button>
+<label class="small muted">배속 <select id="speed" class="speedSel"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+</div>
+<div id="demoBox"><b>추천 경로 시험 (기본 배치)</b><p class="small muted">시작 → Food Dispenser → Pet Hotel → Pet Toy → 출발선 근처 종료. 수평·수직 이동 및 90° 회전만 사용합니다. 이 경로는 실제 물체 배치에 맞춘 검증용 예제이며, 다른 미션은 아직 포함하지 않습니다.</p><div class="small" id="demoState">수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.</div></div>
+<div id="status" role="status">방향키를 누르거나 시작 버튼을 눌러 연습을 시작하세요. 자동 경로는 설정되지 않았습니다.</div>
+<div class="instructions"><strong>키보드 조작</strong> — <kbd>↑</kbd> 전진 <kbd>↓</kbd> 후진 <kbd>←</kbd><kbd>→</kbd> 누를 때마다 15°씩 부드럽게 회전 <kbd>Q</kbd><kbd>E</kbd> 90° 회전 <kbd>G</kbd> 앞 팔로 잡기/놓기 <kbd>M</kbd> 가까운 설비 미션 시작 <kbd>C</kbd> 센서 기준 보정 <kbd>Space</kbd> 정지 <kbd>P</kbd> 일시정지 · <kbd>Shift</kbd> 고속 주행</div>
+<div class="divider"></div>
+<div class="row space" style="margin-bottom:8px"><h2 style="margin:0">화면 터치 조종</h2><span class="muted small">전진·후진은 홀드 / 회전은 1회 15°</span></div>
+<div class="touch">
+<div class="compact" style="max-width:300px;margin:auto">
+<button class="empty" disabled>·</button><button data-key="ArrowUp">↑ 전진</button><button class="empty" disabled>·</button>
+<button id="turnLeftTouch">↶ 15°</button><button data-key="ArrowDown">↓ 후진</button><button id="turnRightTouch">↷ 15°</button>
+</div>
+<div class="actions"><button id="grabTouch">G · 집기/놓기</button><button id="missionTouch">M · 미션</button><button id="correctTouch">C · 보정</button><button id="brakeTouch">■ 정지</button><button id="left90">↶ 90°</button><button id="right90">↷ 90°</button></div>
+</div>
+<div class="footer">이 시뮬레이터의 방향키는 <strong>경로를 연구하기 위한 연습 조작</strong>입니다. 실제 대회는 로봇의 자율주행이 필요합니다. 물체 크기·관성·작업시간은 일부 단순화한 모델이며 실제 경기 규정과 동일한 물리 엔진이 아닙니다. 공식 경기는 120초에 종료됩니다.</div>
+</section>
+<aside class="card"><div class="rightside">
+<div class="section"><h2>로봇 상태 · 7kg 가정</h2>
+<div class="metric"><span>전진/후진 속도</span><strong id="velocity">0.0 cm/s</strong></div>
+<div class="metric"><span>이동 누적 거리</span><strong id="distance">0.0 cm</strong></div>
+<div class="metric"><span>회전 누적량</span><strong id="rotation">0°</strong></div>
+<div class="metric"><span>보정 미실시 거리</span><strong id="uncorrected">0.0 cm</strong></div>
+<div class="metric"><span>추정 위치 오차</span><strong id="positionError">±0.0 cm</strong></div>
+<div class="metric"><span>추정 방향 오차</span><strong id="headingError">±0.0°</strong></div>
+<div class="metric"><span>센서 앞 / 뒤</span><strong id="sensors">— / —</strong></div>
+<div class="metric"><span>보정 횟수</span><strong id="corrections">0회</strong></div>
+<div class="metric"><span>집은 물체 수</span><strong id="heldCount">0개</strong></div><div class="metric"><span>팔 상태</span><strong id="grip">열림</strong></div>
+<div class="metric"><span>미션 진행</span><strong id="missionState">없음</strong></div>
+<div class="metric"><span>미션 완료</span><strong id="tasks">0 / 7</strong></div><div class="metric"><span>예상 점수</span><strong id="liveScore">—</strong></div>
+<p class="note" id="driftNote">엔코더 누적 오차의 예측치만 표시합니다. 주행 위치에 인위적인 오차를 넣지 않습니다.</p>
+</div>
+<div class="section"><h2>물체 위치 조정 (기준 ±2cm)</h2>
+<div class="setting"><label for="objectSelect">대상 선택 · 지도에서 물체를 끌어도 됩니다</label><select id="objectSelect"></select></div>
+<div class="settings" style="margin-top:10px"><div class="setting"><label for="shiftX">X 위치 편차 <b id="shiftXValue">0.0</b> cm</label><input type="range" id="shiftX" min="-2" max="2" value="0" step="0.1"></div><div class="setting"><label for="shiftY">Y 위치 편차 <b id="shiftYValue">0.0</b> cm</label><input type="range" id="shiftY" min="-2" max="2" value="0" step="0.1"></div></div>
+<div class="row" style="margin-top:10px"><button id="restoreObjects">물체 기본 위치</button><label class="check"><input type="checkbox" id="showTrail" checked> 바퀴 자취 표시</label></div>
+<p class="muted small">조정은 경기 전 배치 오차를 가정한 것입니다. 일시정지 상태에서 로봇을 끌어서 시작 위치도 바꿀 수 있습니다. 주행 중 밀려서 이동한 물체는 편차 제한 없이 움직입니다. 재배치 시 연습 기록은 초기화됩니다.</p></div>
+<div class="section"><h2>고난도 미션 작업시간 설정</h2>
+<div class="settings"><div class="setting"><label for="timeToy">Pet Toy (초)</label><input id="timeToy" type="number" min="1" max="60" value="18"></div><div class="setting"><label for="timeFood">Food Dispenser (초)</label><input id="timeFood" type="number" min="1" max="60" value="12"></div><div class="setting"><label for="timeHotel">Pet Hotel (초)</label><input id="timeHotel" type="number" min="1" max="60" value="8"></div><div class="setting"><label for="speedMax">최대 속도 (cm/s)</label><input id="speedMax" type="number" min="5" max="45" value="26"></div></div>
+<p class="muted small">설비 가까이에서 <b>M</b>을 누르면 작업시간이 경과하며 주행이 잠깁니다. 120초를 넘겨도 연습을 이어갈 수 있지만, 종료 시 시간 초과가 표시됩니다.</p><label class="check"><input id="displayCorrect" type="checkbox" checked> 종료 과제 디스플레이 정답 표시(UTF 연습 가정)</label></div>
+<div class="section"><h2>경로 기록과 다시보기</h2><div class="rightbuttons"><button id="replay">▶ 기록 재생</button><button id="download">JSON 기록 저장</button></div><p class="muted small">조작한 위치·방향·물체 이동과 미션 진행을 저장합니다. 기록 재생 후 실제 운전으로 돌아가려면 '로봇 초기화'를 누르세요.</p></div>
+<div class="section"><h2>주행 / 미션 로그</h2><div id="logs" class="log" aria-live="polite"></div></div>
+</div></aside>
+</div>
+</main>
+<div id="results" role="dialog" aria-modal="true" aria-labelledby="resultTitle"><div class="sheet">
+<h2 id="resultTitle" style="font-size:20px;margin-bottom:4px">경기 종료 · 연습 점수</h2><div class="row space"><div><div class="total" id="resultScore">0 / 100</div><div class="muted small" id="resultTasks"></div></div><div class="timer" id="resultTime">00:00</div></div>
+<div id="resultStatus" class="ontime"></div><div id="resultBreakdown" class="scorelist"></div>
+<p class="small muted" id="resultNote">공식 채점표의 항목별 점수를 단순화한 모델입니다. 경기장 규격, 물체의 위치, 팔의 메커니즘 등 실제 심판 판정과 다를 수 있습니다.</p>
+<div class="row"><button id="closeResults">닫기 · 결과 확인</button><button class="primary" id="newTrial">↺ 새 연습</button><button id="exportResults">결과 JSON 저장</button></div></div></div>
+<script>
+(()=>{'use strict';
+const W=182,H=75,FW=196,FH=99,OX=7,OY=12,HALF_L=15,HALF_W=10,DEG=Math.PI/180;
+const $=id=>document.getElementById(id), canvas=$('field'),ctx=canvas.getContext('2d');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),norm=a=>(a%360+360)%360,rad=a=>a*DEG,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const world={fixtures:[{id:'food',label:'사료 디스펜서',x:57,y:4,ox:57,oy:4,shape:'rect',w:12,h:8,color:'#679bbd'},
+{id:'hotel',label:'펫호텔',x:131,y:38,ox:131,oy:38,shape:'circle',r:9,color:'#b5b1b2'},
+{id:'toy',label:'펫토이',x:169.5,y:27.5,ox:169.5,oy:27.5,shape:'rect',w:7,h:21,color:'#8eb5d5'}],
+objects:[{id:'dog',label:'강아지',x:12,y:10,ox:12,oy:10,r:2.9,color:'#273d42'},
+{id:'mail1',label:'우편함 1',x:12.5,y:35,ox:12.5,oy:35,r:2.4,color:'#db555b'},
+{id:'mail2',label:'우편함 2',x:12.5,y:52,ox:12.5,oy:52,r:2.4,color:'#db555b'},
+{id:'cat1',label:'흰 고양이',x:122,y:60,ox:122,oy:60,r:2.6,color:'#ffffff'},
+{id:'cat2',label:'주황 고양이',x:134,y:60,ox:134,oy:60,r:2.6,color:'#e7ae37'},
+{id:'litter1',label:'배설물 1',x:111,y:6.5,ox:111,oy:6.5,r:1.5,color:'#e78941'},
+{id:'litter2',label:'배설물 2',x:117,y:10,ox:117,oy:10,r:1.5,color:'#e78941'},
+{id:'litter3',label:'배설물 3',x:123,y:6.5,ox:123,oy:6.5,r:1.5,color:'#e78941'}]};
+const allObjects=()=>[...world.objects,...world.fixtures];
+const robot={x:83,y:37.5,a:180,v:0,omega:0,autoAngle:null,gripper:false,held:[],slots:{},distance:0,turn:0,uncorrected:0,errPos:0.3,errAng:0.4,corrections:0};
+let running=false,ended=false,replay=false,trialResult=null,limitFrame=null,routeIndex=-1,routeStarted=false,pilot=null,routeMessage='',t=0,replayT=0,replayLen=0,task=null,cooldown=0,last=0,trail=[],record=[],lastRecord=-1,keys={},pointerObject=null,selected='dog',notice='',noticeType='ok',noticeUntil=0,eventLogs=[];
+const achievements={dog:false,cat1:false,cat2:false,litter:false,food:false,toy:false,hotel:false};
+const lines=[[82,0,82,75],[54,0,54,20],[54,55,54,75],[141,38,182,38]];
+function say(msg,level='ok',log=false){notice=msg;noticeType=level;noticeUntil=performance.now()+4800;if(log)eventLogs.unshift({t,text:msg});eventLogs=eventLogs.slice(0,100);$('status').textContent=msg;$('status').className=level==='warn'?'warn':level==='bad'?'bad':'';if(log)renderLogs()}
+function renderLogs(){$('logs').innerHTML=eventLogs.slice(0,24).map(e=>`<div><b>${timeText(e.t)}</b> ${escapeHtml(e.text)}</div>`).join('')}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function timeText(s){let m=Math.floor(s/60),n=Math.floor(s%60);return String(m).padStart(2,'0')+':'+String(n).padStart(2,'0')}
+function vec(a){let r=rad(a);return {x:Math.cos(r),y:Math.sin(r)}}
+function localToWorld(f,l,x=robot.x,y=robot.y,a=robot.a){const v=vec(a);return {x:x+f*v.x-l*v.y,y:y+f*v.y+l*v.x}}
+function worldToLocal(p,x=robot.x,y=robot.y,a=robot.a){const v=vec(a),dx=p.x-x,dy=p.y-y;return {f:dx*v.x+dy*v.y,l:-dx*v.y+dy*v.x}}
+function corners(x=robot.x,y=robot.y,a=robot.a){return [[HALF_L,HALF_W],[HALF_L,-HALF_W],[-HALF_L,HALF_W],[-HALF_L,-HALF_W]].map(([f,l])=>localToWorld(f,l,x,y,a))}
+function circleHitBody(ob,x=robot.x,y=robot.y,a=robot.a,margin=0){let p=worldToLocal(ob,x,y,a),d=Math.hypot(p.f-clamp(p.f,-HALF_L,HALF_L),p.l-clamp(p.l,-HALF_W,HALF_W));return d<(ob.r+margin)}
+function rectHitBody(ob,x=robot.x,y=robot.y,a=robot.a){let cp=corners(x,y,a),x0=ob.x-ob.w/2,x1=ob.x+ob.w/2,y0=ob.y-ob.h/2,y1=ob.y+ob.h/2;
+let vs=vec(a),axis=[{x:1,y:0},{x:0,y:1},vs,{x:-vs.y,y:vs.x}];
+return axis.every(v=>{let p=cp.map(q=>q.x*v.x+q.y*v.y), q=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}].map(q=>q.x*v.x+q.y*v.y);return Math.max(...p)>=Math.min(...q)-.01&&Math.max(...q)>=Math.min(...p)-.01})}
+function fixtureCollision(x=robot.x,y=robot.y,a=robot.a){let cp=corners(x,y,a);if(cp.some(p=>p.x<0||p.x>W||p.y<0||p.y>H))return '낭떠러지: 차체가 경기장 경계를 벗어나려 합니다';for(const ob of world.fixtures){if(ob.shape==='circle'?circleHitBody(ob,x,y,a):rectHitBody(ob,x,y,a))return ob.label+' 장애물과 차체 충돌'}return null}
+function objectAllowed(ob){if(ob.x-ob.r<0||ob.x+ob.r>W||ob.y-ob.r<0||ob.y+ob.r>H)return false;return !world.fixtures.some(f=>{if(f.shape==='circle')return Math.hypot(ob.x-f.x,ob.y-f.y)<ob.r+f.r;return Math.abs(ob.x-f.x)<ob.r+f.w/2 && Math.abs(ob.y-f.y)<ob.r+f.h/2})}
+function resolvePush(ob){if(!circleHitBody(ob))return true;let p=worldToLocal(ob), dF=HALF_L+ob.r-Math.abs(p.f),dL=HALF_W+ob.r-Math.abs(p.l);if(dF<dL)p.f+=(p.f>=0?1:-1)*(dF+.07);else p.l+=(p.l>=0?1:-1)*(dL+.07);const q=localToWorld(p.f,p.l),prev={x:ob.x,y:ob.y};ob.x=q.x;ob.y=q.y;if(!objectAllowed(ob)){ob.x=prev.x;ob.y=prev.y;return false}return true}
+function resolveArmPush(ob){
+  // Front-guide contact: circles touched by an open arm are physically displaced, too.
+  const ends=[];
+  for(const side of [-1,1]){
+    let p1=localToWorld(14.2,side*8),p2=localToWorld(24.5,side*(robot.gripper?6.2:9.5));
+    ends.push([p1,p2]);
+    if(robot.gripper)ends.push([p2,localToWorld(25.2,side*4.5)]);
+  }
+  for(const [a,b] of ends){
+    let vx=b.x-a.x,vy=b.y-a.y,den=vx*vx+vy*vy;
+    let v=clamp(((ob.x-a.x)*vx+(ob.y-a.y)*vy)/den,0,1);
+    let qx=a.x+vx*v,qy=a.y+vy*v,dx=ob.x-qx,dy=ob.y-qy,d=Math.hypot(dx,dy);
+    let threshold=ob.r+.95;
+    if(d>=threshold)continue;
+    let n=d>.02?{x:dx/d,y:dy/d}:{x:Math.cos(rad(robot.a)),y:Math.sin(rad(robot.a))};
+    const old={x:ob.x,y:ob.y};ob.x+=n.x*(threshold-d+.04);ob.y+=n.y*(threshold-d+.04);
+    if(!objectAllowed(ob)){ob.x=old.x;ob.y=old.y;return false}
+  }
+  return true
+}
+function armTarget(){const f=HALF_L+6;return localToWorld(f,0)}
+function heldUpdate(){
+  for(const id of robot.held){const ob=world.objects.find(o=>o.id===id),slot=robot.slots[id];if(!ob||!slot)continue;
+    const q=localToWorld(slot.f,slot.l),before={x:ob.x,y:ob.y};ob.x=q.x;ob.y=q.y;
+    if(!objectAllowed(ob)){ob.x=before.x;ob.y=before.y;return false}
+  }
+  return true
+}
+function capturePocket(){
+  if(!robot.gripper)return;
+  const newOnes=[];
+  for(const ob of world.objects){
+    if(robot.held.includes(ob.id))continue;
+    const p=worldToLocal(ob);
+    // Preserve actual offset of each object; no limit of one object.
+    if(p.f>=HALF_L-1.5 && p.f<=HALF_L+12 && Math.abs(p.l)<=8.7+ob.r*.25){
+      robot.held.push(ob.id);robot.slots[ob.id]={f:p.f,l:p.l};newOnes.push(ob.label)
+    }
+  }
+  if(newOnes.length)say(newOnes.join(', ')+' 포획 · 현재 '+robot.held.length+'개','ok',true)
+}
+function tryPose(x,y,a){
+  let stop=fixtureCollision(x,y,a);if(stop)return stop;
+  const backup=world.objects.map(o=>({x:o.x,y:o.y})),prev={x:robot.x,y:robot.y,a:robot.a};
+  robot.x=x;robot.y=y;robot.a=norm(a);
+  if(!heldUpdate()){Object.assign(robot,prev);world.objects.forEach((o,i)=>Object.assign(o,backup[i]));return '집은 물체가 경계/설비와 충돌합니다'}
+  for(const ob of world.objects){
+    if(robot.held.includes(ob.id))continue;
+    if(!resolvePush(ob)||!resolveArmPush(ob)){
+      Object.assign(robot,prev);world.objects.forEach((o,i)=>Object.assign(o,backup[i]));return ob.label+'이(가) 경기장 가장자리 또는 설비에 막혔습니다'
+    }
+  }
+  capturePocket();
+  return null
+}
+function sensorStates(){let readings=[];for(const side of [1,-1]){let hits=[];for(let lateral of [-7.5,0,7.5]){let p=localToWorld(side*13.3,lateral);let hit=null;const edge=Math.min(p.x,p.y,W-p.x,H-p.y);if(edge<2.5)hit='경계';for(const [x1,y1,x2,y2] of lines){let vx=x2-x1,vy=y2-y1,len=vx*vx+vy*vy,q=clamp(((p.x-x1)*vx+(p.y-y1)*vy)/len,0,1),d=Math.hypot(p.x-(x1+q*vx),p.y-(y1+q*vy));if(d<1.5)hit='검은선'}hits.push({p,hit})}readings.push(hits)}return {front:readings[0],back:readings[1]}}
+function correct(){if(replay)return;let s=sensorStates(),groups=[s.front,s.back],count=groups.map(g=>g.filter(p=>p.hit).length);if(Math.max(...count)>=2){robot.errPos=.35;robot.errAng=.45;robot.uncorrected=0;robot.corrections++;say('센서 배열 2개 이상 감지: 엔코더 위치·방향 오차 재설정 (실제 정렬 알고리즘은 별도 필요)','ok',true)}else if(count[0]+count[1]>0){say('센서 일부만 감지됐습니다. 앞/뒤 배열을 검은선에 더 정확히 정렬하세요.','warn',true)}else say('보정 기준선 또는 테이블 끝을 감지하지 못했습니다. C 보정 불가','warn',true)}
+function toggleGrip(){
+  if(replay||task||trialResult)return;
+  if(robot.gripper){
+    const names=robot.held.map(id=>world.objects.find(o=>o.id===id)?.label).filter(Boolean);
+    robot.gripper=false;robot.held=[];robot.slots={};achieve();
+    say(names.length?names.join(', ')+' '+names.length+'개 내려놓음':'앞 팔 벌림','ok',true);
+    return
+  }
+  robot.gripper=true;capturePocket();
+  if(!robot.held.length)say('앞 팔 닫힘 — 포획 영역에 물체가 없습니다. 팔을 닫은 채 접근해도 포획됩니다.','warn',true)
+}
+function achievementName(id){return {dog:'강아지 공원',cat1:'흰 고양이 → 동물병원',cat2:'주황 고양이 → 미용실',litter:'화장실 청소',food:'사료 수거',hotel:'사료 배달',toy:'펫토이 작동'}[id]}
+function achieve(){const get=id=>world.objects.find(o=>o.id===id),held=robot.held;
+let flags={dog:()=>{let o=get('dog');return !held.includes('dog')&&o.x>=9&&o.x<=22&&o.y>=59&&o.y<=72},cat1:()=>{let o=get('cat1');return !held.includes('cat1')&&o.x>=114&&o.x<=141&&o.y>=67},cat2:()=>{let o=get('cat2');return !held.includes('cat2')&&o.x>=39&&o.x<=69&&o.y>=67},litter:()=>world.objects.filter(o=>o.id.startsWith('litter')).every(o=>o.x>=103&&o.x<=132&&o.y<=6.5)};
+for(let id of Object.keys(flags)){if(!achievements[id]&&flags[id]()){achievements[id]=true;say(achievementName(id)+' 완료 (단순화 판정)','ok',true)}}}
+function scoring(data=null){
+  const objs=data?.objects||world.objects,flags=data?.flags||achievements, rb=data?.robot||robot;
+  const find=id=>objs.find(o=>o.id===id), moved=id=>{const o=find(id);return o?Math.hypot(o.x-o.ox,o.y-o.oy)>2.5:false};
+  const held=rb.held||[];
+  const dog=find('dog'),cat1=find('cat1'),cat2=find('cat2');
+  const dogFull=dog&&!held.includes('dog')&&dog.x>=11&&dog.x<=21&&dog.y>=61&&dog.y<=70;
+  const dogPartial=dog&&!held.includes('dog')&&dog.x>=8&&dog.x<=24&&dog.y>=58&&dog.y<=74;
+  const mailCount=['mail1','mail2'].filter(id=>!moved(id)).length;
+  const litterCount=['litter1','litter2','litter3'].filter(id=>{let o=find(id);return o&&o.x>=103&&o.x<=132&&o.y<=4}).length;
+  const whiteDest=cat1&&!held.includes('cat1')&&cat1.x>=115&&cat1.x<=139&&cat1.y>=70;
+  const orangeDest=cat2&&!held.includes('cat2')&&cat2.x>=40&&cat2.x<=67&&cat2.y>=70;
+  const stopped=Math.abs(rb.v)<.3&&Math.abs(rb.omega)<1&&!data?.task;
+  const endZone=rb.x>=72&&rb.x<=94&&rb.y>=25&&rb.y<=50;
+  const displayCorrect=$('displayCorrect').checked;
+  const parts=[
+  ['사료 수거 (10개 가정)',flags.food?10:0,10],
+  ['Pet Hotel (10개 배달 가정)',flags.hotel?10:0,10],
+  ['화장실 청소 ('+litterCount+'/3)',litterCount*3,9],
+  ['강아지 이동',dogFull?10:dogPartial?8:moved('dog')?4:0,10],
+  ['우편함 보존 ('+mailCount+'/2)',mailCount*2,4],
+  ['Pet Toy',flags.toy?10:0,10],
+  ['흰 고양이',whiteDest?10:moved('cat1')?5:0,10],
+  ['주황 고양이',orangeDest?10:moved('cat2')?5:0,10],
+  ['UTF 종료 위치 (예시: 출발선 근처)',stopped&&endZone?8:0,8],
+  ['UTF 정답 표시 (연습용 체크박스)',stopped&&displayCorrect?8:0,8],
+  ['로봇 온전',11,11]
+  ];
+  const total=Math.max(0,parts.reduce((s,p)=>s+p[1],0));
+  const achieved=parts.filter(p=>p[1]>0 && p[2]>=8).length;
+  return {total,parts,achieved,stopped,endZone,displayCorrect}
+}
+function finishGame(){
+  if(replay)return;
+  if(task){say('설비 작업이 진행 중입니다. 작업을 완료하고 종료하세요.','warn',true);return}
+  running=false;ended=true;pilot=null;routeIndex=-1;keys={};robot.v=0;robot.omega=0;robot.autoAngle=null;
+  const score=scoring();
+  trialResult={t,score,limit:limitFrame?scoring(limitFrame):null,late:t>120};
+  const over=t>120;
+  $('resultScore').textContent=score.total+' / 100';$('resultTasks').textContent='점수가 발생한 항목 '+score.parts.filter(v=>v[1]>0).length+'개';
+  $('resultTime').textContent=timeText(t);
+  const status=$('resultStatus');status.className=over?'overtime':'ontime';
+  status.textContent=over?'시간 초과 · '+(t-120).toFixed(1)+'초 초과. 연장 후 연습 점수 '+score.total+'점은 공식 유효 점수가 아닙니다.':'120초 이내 종료 · 연습 점수 '+score.total+'점';
+  $('resultBreakdown').innerHTML=score.parts.map(p=>'<div>'+escapeHtml(p[0])+'</div><div><b>'+p[1]+'</b> / '+p[2]+'</div>').join('');
+  $('resultNote').textContent=(over?(trialResult.limit?'120초 시점의 참고 점수: '+trialResult.limit.total+'점. ':'120초 시점 기록 없음. '):'')+'공식 채점표의 배점을 따른 단순화된 판정입니다. 출발·종료 UTF는 임의로 설정했으며 충돌에 따른 손상·사료 개별 수량·집게 물리학은 완전 구현되지 않았습니다.';
+  $('results').classList.add('show');say('경기 종료 · '+score.total+'점'+(over?' (시간 초과)':''),'ok',true)
+}
+function missionNear(f){let delta=worldToLocal(f);let distanceToFront=Math.hypot(delta.f-(HALF_L+8),Math.max(0,Math.abs(delta.l)-6));return distanceToFront<11&&delta.f>4}
+function beginTask(){if(replay||task||ended||trialResult)return;let allowed=world.fixtures.filter(missionNear).sort((a,b)=>dist(a,armTarget())-dist(b,armTarget()));let f=allowed[0];if(!f){say('팔 전방에 설비가 없습니다. 몸체가 아닌 전방 팔이 설비 쪽을 향하게 접근하세요','warn',true);return}
+if(achievements[f.id]||(f.id==='hotel'&&achievements.hotel)){say(f.label+' 미션은 이미 수행했습니다','warn');return}
+if(f.id==='hotel'&&!achievements.food){say('먼저 Food Dispenser에서 사료를 수거해야 합니다','warn',true);return}
+let seconds=Number($(f.id==='toy'?'timeToy':f.id==='food'?'timeFood':'timeHotel').value);seconds=clamp(isFinite(seconds)?seconds:12,1,60);
+task={id:f.id,label:f.label,remaining:seconds,total:seconds};robot.v=0;robot.omega=0;robot.autoAngle=null;running=true;say(f.label+' 작업 시작 · '+seconds+'초 소요','ok',true)}
+function finishTask(){if(!task)return;achievements[task.id]=true;say(task.label+' 작업 완료 (장치 동작 가정)','ok',true);task=null}
+function eventMove(dt){if(task){task.remaining-=dt;robot.v=0;robot.omega=0;if(task.remaining<=0)finishTask();return}let requested=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0),maxSpeed=clamp(Number($('speedMax').value)||26,5,45)*(keys.Shift?1.3:1);
+let targetV=pilot&&pilot.driveSpeed!==null?pilot.driveSpeed:requested*(requested<0?.68*maxSpeed:maxSpeed),accel=Math.abs(targetV)<Math.abs(robot.v)?29:18;robot.v+=clamp(targetV-robot.v,-accel*dt,accel*dt);
+if(Math.abs(robot.v)<.06)robot.v=0;
+let targetOmega=0;
+if(robot.autoAngle!==null){
+  const remaining=((robot.autoAngle-robot.a+540)%360)-180;
+  if(Math.abs(remaining)<.25 && Math.abs(robot.omega)<9){robot.a=norm(robot.autoAngle);robot.omega=0;robot.autoAngle=null}
+  else targetOmega=Math.sign(remaining)*Math.min(55,Math.sqrt(Math.max(0,2*115*Math.abs(remaining))));
+}
+robot.omega+=clamp(targetOmega-robot.omega,-115*dt,115*dt);if(Math.abs(robot.omega)<.06)robot.omega=0;
+let turnDelta=robot.omega*dt,dir=vec(robot.a+turnDelta*.5),step=robot.v*dt;
+if(Math.abs(step)<.0001&&Math.abs(turnDelta)<.0001)return;
+let old={x:robot.x,y:robot.y,a:robot.a},problem=tryPose(old.x+dir.x*step,old.y+dir.y*step,old.a+turnDelta);
+if(problem){robot.v=0;robot.omega=0;robot.autoAngle=null;if(routeIndex>=0){routeMessage='경로 중단 · '+problem;routeIndex=-1;pilot=null;$('demoState').textContent=routeMessage;}if(cooldown<=0){say(problem,'bad',true);cooldown=1.2}return}
+let travel=Math.abs(step),turn=Math.abs(turnDelta);robot.distance+=travel;robot.turn+=turn;robot.uncorrected+=travel;robot.errPos=clamp(robot.errPos+travel*.033+turn*.008,0,30);robot.errAng=clamp(robot.errAng+turn*.034+travel*.006,0,30);
+if(travel>.005||turn>.005){let lastp=trail[trail.length-1];if(!lastp||Math.hypot(robot.x-lastp.x,robot.y-lastp.y)>.12||t-lastp.t>.12){trail.push({x:robot.x,y:robot.y,t});if(trail.length>14000)trail.splice(0,400)}}
+achieve();}
+function snapshot(){return {t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({id:o.id,x:o.x,y:o.y,ox:o.ox,oy:o.oy})),flags:{...achievements},task:task?{...task}:null}}
+function saveFrame(){if(replay)return;if(t-lastRecord<.085)return;record.push(snapshot());lastRecord=t;if(record.length>2000)record.shift()}
+function reset(restore=false){running=false;ended=false;replay=false;trialResult=null;limitFrame=null;routeIndex=-1;routeStarted=false;pilot=null;routeMessage='';$('results').classList.remove('show');$('demoState').textContent='수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.';replayT=0;t=0;Object.assign(robot,{x:83,y:37.5,a:180,v:0,omega:0,autoAngle:null,gripper:false,held:[],slots:{},distance:0,turn:0,uncorrected:0,errPos:.3,errAng:.4,corrections:0});keys={};pointerObject=null;task=null;trail=[{x:robot.x,y:robot.y,t:0}];record=[];lastRecord=-1;cooldown=0;Object.keys(achievements).forEach(k=>achievements[k]=false);world.objects.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});world.fixtures.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});eventLogs=[];saveFrame();updateSelect();say('새 연습 준비 완료. 방향키 또는 시작을 눌러 주행하세요.','ok',true);draw();updateHUD()}
+function resetObjects(){reset(true);say('모든 물체를 기준 위치로 되돌렸습니다','ok',true)}
+function applyDeviation(o,dx,dy){o.baseDx=dx;o.baseDy=dy;o.x=o.ox+dx;o.y=o.oy+dy}
+function randomize(){reset();allObjects().forEach(o=>applyDeviation(o,Math.round((Math.random()*4-2)*10)/10,Math.round((Math.random()*4-2)*10)/10));updateSelect();say('모든 물체/설비에 X·Y 각각 ±2cm 배치 오차 적용','ok',true)}
+function updateSelect(){let o=allObjects().find(o=>o.id===selected)||allObjects()[0];selected=o.id;$('objectSelect').value=selected;for(let k of ['X','Y']){$('shift'+k).value=(o[k.toLowerCase()]===undefined?0:(o['baseD'+k.toLowerCase()]||0));$('shift'+k+'Value').textContent=Number($('shift'+k).value).toFixed(1)}}
+function changeOffset(axis,value){let o=allObjects().find(o=>o.id===selected),v=clamp(Number(value),-2,2);if(!o)return;let dx=axis==='x'?v:o.baseDx||0,dy=axis==='y'?v:o.baseDy||0;reset();o=allObjects().find(o=>o.id===selected);applyDeviation(o,dx,dy);updateSelect();say(o.label+' 기준 좌표 편차 X '+dx.toFixed(1)+' / Y '+dy.toFixed(1)+'cm','ok')}
+function setReplayFrame(frame){t=frame.t;Object.assign(robot,frame.robot);for(const s of frame.objects){let o=world.objects.find(o=>o.id===s.id);if(o){o.x=s.x;o.y=s.y}}Object.assign(achievements,frame.flags);task=frame.task?{...frame.task}:null}
+function replayStart(){if(record.length<3){say('재생할 운전 기록이 없습니다. 먼저 주행해 주세요','warn');return}replay=true;running=true;ended=false;replayT=0;replayLen=record[record.length-1].t;setReplayFrame(record[0]);say('운전 기록 재생 중 · 키보드 운전 잠금','ok',true)}
+function replayStep(dt){replayT+=dt;if(replayT>=replayLen){setReplayFrame(record[record.length-1]);running=false;ended=true;say('기록 재생 종료','ok');return}let left=0,right=record.length-1;while(left+1<right){let m=(left+right)>>1;if(record[m].t<=replayT)left=m;else right=m}let a=record[left],b=record[right],u=(replayT-a.t)/(b.t-a.t);setReplayFrame(a);robot.x=a.robot.x+(b.robot.x-a.robot.x)*u;robot.y=a.robot.y+(b.robot.y-a.robot.y)*u;robot.a=norm(a.robot.a+(((b.robot.a-a.robot.a+540)%360)-180)*u);t=replayT}
+function saveJSON(){const data={name:'ROBOFEST 2027 manual practice',dimensions:{field:[182,75],robot:[20,30],weightKg:7},result:trialResult,modelNote:'simplified 2D geometry and estimated encoder error; not a physical or official scoring engine',frames:record};let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='robofest2027_practice_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),300)}
+function moveKeyboard(key,active){if(replay)return;if(active&&!running&&!ended)running=true;if(ended)return;keys[key]=active;if(!active&&key==='Shift')keys.Shift=false}
+function targetTurn(amount){if(replay||task||ended)return;if(!running)running=true;robot.autoAngle=norm((robot.autoAngle!==null?robot.autoAngle:robot.a)+amount);say((amount<0?'반시계 ':'시계 ')+Math.abs(amount)+'° 예약 · 목표 '+robot.autoAngle.toFixed(1)+'°','ok')}
+function brake(){robot.v=0;robot.omega=0;robot.autoAngle=null;keys={};say('모터 정지 명령','ok')}
+// Test route uses only orthogonal motion and 90-degree turns.
+const demoRoute=[
+ {kind:'drive',axis:'x',to:57,label:'서쪽 26cm → 디스펜서 접근'},
+ {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
+ {kind:'drive',axis:'y',to:29,label:'디스펜서 정렬'},
+ {kind:'task',id:'food',label:'사료 수거 12초'},
+ {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
+ {kind:'drive',axis:'x',to:98,label:'펫호텔 접근'},
+ {kind:'task',id:'hotel',label:'사료 배달 8초'},
+ {kind:'drive',axis:'x',to:85,label:'호텔에서 13cm 후진 · 배설물 회피'},
+ {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
+ {kind:'drive',axis:'y',to:18.5,label:'호텔 위쪽 통로 진입'},
+ {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
+ {kind:'drive',axis:'x',to:143,label:'호텔 위쪽 좁은 통로 통과 → Pet Toy'},
+ {kind:'task',id:'toy',label:'Pet Toy 작업 18초'},
+ {kind:'drive',axis:'x',to:85,label:'좁은 통로로 후진'},
+ {kind:'turn',angle:90,label:'남쪽으로 90° 회전'},
+ {kind:'drive',axis:'y',to:37.5,label:'출발선 높이로 이동'},
+
+ {kind:'finish',label:'경기 종료 및 점수 계산'}
+];
+function startDemo(){
+  reset(true);
+  $('displayCorrect').checked=true;
+  routeIndex=0;routeStarted=false;running=true;routeMessage='기본 물체 배치로 주행 시험 중';
+  say('검증 경로 시작 · 수평/수직 이동만 사용','ok',true);
+}
+function demoUpdate(dt){
+  if(routeIndex<0||ended)return;
+  if(routeIndex>=demoRoute.length){routeIndex=-1;pilot=null;return}
+  const c=demoRoute[routeIndex];
+  $('demoState').textContent=`${routeIndex+1}/${demoRoute.length} · ${c.label}`;
+  const next=()=>{routeIndex++;routeStarted=false;pilot=null;robot.v=0;robot.omega=0};
+  if(c.kind==='turn'){
+    pilot={driveSpeed:0};
+    if(!routeStarted){robot.autoAngle=c.angle;routeStarted=true;}
+    if(robot.autoAngle===null&&Math.abs(((c.angle-robot.a+540)%360)-180)<.4&&Math.abs(robot.omega)<1)next();
+  }else if(c.kind==='drive'){
+    const current=robot[c.axis],gap=c.to-current;
+    const axisProjection=c.axis==='x'?Math.cos(rad(robot.a)):Math.sin(rad(robot.a));
+    const desired=axisProjection===0?0:Math.sign(gap/axisProjection)*Math.min(21,Math.sqrt(Math.max(0,2*25*Math.abs(gap))));
+    pilot={driveSpeed:Math.abs(gap)<.30?0:desired};
+    if(Math.abs(gap)<.30&&Math.abs(robot.v)<1.1){next()}
+  }else if(c.kind==='task'){
+    pilot={driveSpeed:0};
+    if(!routeStarted){routeStarted=true;beginTask()}
+    if(routeStarted&&!task&&achievements[c.id])next();
+  }else if(c.kind==='finish'){
+    pilot={driveSpeed:0};
+    if(Math.abs(robot.v)<.4){routeIndex=-1;finishGame()}
+  }
+}
+function saveResult(){
+  if(!trialResult){say('종료 후 결과를 저장할 수 있습니다','warn');return}
+  const payload={field_cm:[182,75],robot_cm:[20,30],weight_kg:7,simulated:true,...trialResult,
+   motion:{distance_cm:robot.distance,rotation_degrees:robot.turn,corrections:robot.corrections},logs:eventLogs};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download='robofest2027_trial_score.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)
+}
+// Exposed solely for deterministic browser-based regression tests and reproducible route validation.
+window.__rfTest={advance:(dt)=>advance(dt),startDemo,finishGame,getState:()=>({t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),result:trialResult,routeIndex,routeMessage,task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring};
+function draw(){let viewport=canvas.getBoundingClientRect(),pix=window.devicePixelRatio||1,cw=Math.max(1,Math.round(viewport.width*pix)),ch=Math.max(1,Math.round(viewport.height*pix));if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(cw/FW,0,0,ch/FH,OX*cw/FW,OY*ch/FH);ctx.clearRect(-OX,-OY,FW,FH);ctx.fillStyle='#e9f1f3';ctx.fillRect(-OX,-OY,FW,FH);
+function rect(x,y,w,h,fill,stroke,sw=.5){ctx.beginPath();ctx.rect(x,y,w,h);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
+function circle(x,y,r,fill,stroke,sw=.5){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
+function label(str,x,y,size=3.1,color='#2f4d56',align='left'){ctx.save();ctx.font=`600 ${size}px system-ui,-apple-system,sans-serif`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.strokeStyle='rgba(240,246,247,.94)';ctx.lineWidth=.85;ctx.lineJoin='round';ctx.strokeText(str,x,y);ctx.fillStyle=color;ctx.fillText(str,x,y);ctx.restore()}
+ctx.save();ctx.beginPath();ctx.roundRect(0,0,W,H,4.5);ctx.clip();rect(0,0,W,H,'#f5f8f9');
+// Markers: fixed zones, visually below the trail.
+rect(11,61,10,9,'#58d46c','#328b45',.6);rect(40,72,27,3,'#76b66d');rect(115,72,24,3,'#7cbd82');rect(104,0,27,4,'#f3c555');
+// Driving footprint, full 20cm width; recent segments are more opaque.
+if($('showTrail').checked&&trail.length>1){ctx.save();ctx.lineWidth=20;ctx.lineCap='round';ctx.lineJoin='round';for(let i=1;i<trail.length;i++){let age=t-trail[i].t;if(age<0||age>34)continue;let f=1-age/34,alpha=.035+.53*f*f;ctx.strokeStyle=`rgba(0,115,61,${alpha})`;ctx.beginPath();ctx.moveTo(trail[i-1].x,trail[i-1].y);ctx.lineTo(trail[i].x,trail[i].y);ctx.stroke()}ctx.restore()}
+// Black lines.
+ctx.save();ctx.strokeStyle='#15202a';ctx.lineWidth=1.2;ctx.lineCap='butt';for(let line of lines){ctx.beginPath();ctx.moveTo(line[0],line[1]);ctx.lineTo(line[2],line[3]);ctx.stroke()}ctx.restore();
+// Field fixtures drawn over trail.
+for(const f of world.fixtures){if(f.shape==='circle'){circle(f.x,f.y,f.r,f.color,'#67737c',.65);label('PET HOTEL',f.x,f.y,3.2,'#29454a','center')}else{rect(f.x-f.w/2,f.y-f.h/2,f.w,f.h,f.color,'#5e8298',.6);label(f.id==='food'?'FOOD':'PET TOY',f.id==='food'?f.x:f.x-1,f.id==='food'?f.y-6:f.y-14,3.2,'#344955','center')}}
+for(const o of world.objects){let onMove=dist(o,{x:o.ox,y:o.oy})>2.2;circle(o.x,o.y,o.r,o.color,onMove?'#b35342':'#6b7f87',onMove?.95:.6);if(o.id==='cat1')circle(o.x,o.y,.65,'#8bb7c6');if(o.id.startsWith('mail')){rect(o.x-1.4,o.y-.9,2.8,1.8,'#f4e8e8');}if(o.id==='dog')circle(o.x+.5,o.y-.4,.6,'#e9f0ed');}
+// Fixed labels and occasional highlights.
+label('DOG',6,4,3.1);label('MAIL',19,37,2.8);label('MAIL',19,53,2.8);label('DOG PARK',10,73,2.6);label('GROOMER',52,69.4,2.5,'#3e5948','center');label('VET',127,69.4,2.5,'#3e5948','center');label('LITTER',117,-2.7,3,'#34474a','center');label('CAT',122,55,2.8);label('CAT',134,55,2.8);
+// Confidence halo represents accumulated encoder uncertainty; no movement perturbation.
+if(robot.errPos>1){ctx.save();ctx.setLineDash([1.6,1.1]);ctx.strokeStyle='rgba(211,91,42,.75)';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(robot.x,robot.y,Math.min(robot.errPos,28),0,Math.PI*2);ctx.stroke();ctx.restore()}
+// Draw full 20 x 30 robot and front arms.
+ctx.save();ctx.translate(robot.x,robot.y);ctx.rotate(rad(robot.a));rect(-15,-10,30,20,'#0b6577','#063d4d',.7);rect(-9,-11.5,18,1.5,'#233a47');rect(-9,10,18,1.5,'#233a47');rect(-11.5,-8,22,16,'rgba(14,108,121,.45)');
+// forward direction triangle
+ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(4,-3.5);ctx.lineTo(4,3.5);ctx.closePath();ctx.fillStyle='#d7fff6';ctx.fill();
+ctx.font='600 3.5px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#efffff';ctx.fillText('7kg',-2,0);if(robot.held.length){ctx.font='600 2.6px system-ui';ctx.fillText('×'+robot.held.length,16,-13)}
+const armOuter=robot.gripper?6.2:9.5;ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(14.2,side*8);ctx.lineTo(24.5,side*armOuter);if(robot.gripper)ctx.lineTo(25.2,side*4.5);ctx.stroke()}
+// front and rear sensor bars, each 3 points
+const sense=sensorStates();for(let j=0;j<2;j++){const front=j===0;for(let k=0;k<3;k++){let h=(front?sense.front:sense.back)[k],local={f:front?13.3:-13.3,l:[-7.5,0,7.5][k]};circle(local.f,local.l,1.0,h.hit?'#f77853':'#7cffd8',h.hit?'#bd3c24':'#0c8f76',.23)}}
+ctx.restore();
+// editing selection plus/minus 2cm guide
+let selectedObj=allObjects().find(o=>o.id===selected);if(selectedObj){ctx.save();ctx.strokeStyle='rgba(34,119,184,.7)';ctx.setLineDash([1.2,1.2]);rect(selectedObj.ox-2,selectedObj.oy-2,4,4,null,'#267caa',.6);ctx.restore()}
+ctx.restore();ctx.save();ctx.setLineDash([2,1.2]);ctx.strokeStyle='#78939c';ctx.lineWidth=.7;ctx.strokeRect(0,0,W,H);ctx.restore();
+label('182 cm',W/2,81,3.2,'#3a5867','center');label('75 cm',-3,H/2,2.6,'#3a5867','center');label('초록 = 지난 영역 (폭 20cm) · 붉은 점선 원 = 위치 불확실성',0,-8,2.9);
+}
+function updateHUD(){let s=sensorStates(),counts=[s.front,s.back].map(g=>g.filter(o=>o.hit).length),dir=['동','남','서','북'][Math.round(norm(robot.a)/90)%4];$('pose').textContent=`X ${robot.x.toFixed(1)} · Y ${robot.y.toFixed(1)} · ${dir} ${norm(robot.a).toFixed(0)}°`;
+$('timer').innerHTML=timeText(t)+' <span class="muted">/ 02:00</span>';$('timebar').style.width=Math.min(100,t/120*100)+'%';$('timebar').style.background=t>120?'#ef9564':'linear-gradient(90deg,#36b88f,#c5e899)';$('sessionBadge').textContent=replay?'기록 재생':ended?'경기 종료':t>120?'시간 초과 · 연습 지속':task?'설비 작동':running?'주행 중':'일시정지 / 대기';
+$('velocity').textContent=robot.v.toFixed(1)+' cm/s';$('distance').textContent=robot.distance.toFixed(1)+' cm';$('rotation').textContent=robot.turn.toFixed(0)+'°';$('uncorrected').textContent=robot.uncorrected.toFixed(1)+' cm';$('positionError').textContent='±'+robot.errPos.toFixed(1)+' cm';$('headingError').textContent='±'+robot.errAng.toFixed(1)+'°';$('sensors').textContent=counts[0]+'/3 · '+counts[1]+'/3';$('corrections').textContent=robot.corrections+'회';$('grip').textContent=robot.held.length?'포획 ('+robot.held.map(id=>world.objects.find(o=>o.id===id)?.label).join(', ')+')':robot.gripper?'닫힘 (빈 팔)':'열림';$('missionState').textContent=task?task.label+' · '+Math.ceil(task.remaining)+'초':achievements.food&&!achievements.hotel?'사료 보유': '대기';$('tasks').textContent=Object.values(achievements).filter(Boolean).length+' / 7';$('heldCount').textContent=robot.held.length+'개';$('liveScore').textContent=scoring().total+' / 100';
+let risk=(robot.errPos>=3||robot.errAng>=4);$('driftNote').textContent=risk?'보정 부족 경고: 긴 직진 또는 회전으로 엔코더 오차 추정치가 커졌습니다. 가까운 검은선/경계에서 C로 재보정하세요.':'보정 이후 오차 추정치가 허용 참고값 내입니다. 오차는 시각적 추정일 뿐 실제 로봇을 움직이지 않습니다.';$('driftNote').style.color=risk?'#ffd08b':'#bde4d8';
+if(performance.now()>noticeUntil){if(task){$('status').textContent=task.label+' 작동 중 · 남은 '+Math.ceil(task.remaining)+'초 (주행 잠금)';$('status').className=''}else if(risk){$('status').textContent='보정 권장: 위치 ±'+robot.errPos.toFixed(1)+'cm / 방향 ±'+robot.errAng.toFixed(1)+'°. 검은선 감지 시 C 사용';$('status').className='warn'}else if(counts[0]>=2||counts[1]>=2){$('status').textContent='앞/뒤 라인센서에 검은선 또는 경계가 감지됐습니다. C 보정 가능';$('status').className=''}else{$('status').textContent='수동 주행: ↑↓ 전후진 / ←→ 회전 / G 잡기 / M 미션 / C 보정';$('status').className=''}}
+}
+let lastHUD=0;
+function advance(dt){
+  if(!running)return;
+  if(replay){replayStep(dt);return}
+  let steps=Math.ceil(dt/.012),sdt=dt/steps;
+  for(let i=0;i<steps;i++){
+    if(!running)break;
+    t+=sdt;cooldown=Math.max(0,cooldown-sdt);
+    if(routeIndex>=0)demoUpdate(sdt);
+    eventMove(sdt);
+    if(!limitFrame && t>=120)limitFrame=snapshot();
+  }
+  saveFrame();
+}
+function frame(now){
+  if(!last)last=now;const dt=clamp((now-last)/1000,0,.07);last=now;
+  if(running)advance(dt*(Number($('speed').value)||1));
+  if(now-lastHUD>110){updateHUD();lastHUD=now}
+  draw();requestAnimationFrame(frame)
+}
+const moveKeys=new Set(['ArrowUp','ArrowDown','Shift']);
+window.addEventListener('keydown',e=>{
+  const tag=e.target?.tagName;if(['INPUT','SELECT','TEXTAREA'].includes(tag))return;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyG','KeyM','KeyC','KeyQ','KeyE','KeyP','Shift'].includes(e.code))e.preventDefault();
+  if(moveKeys.has(e.key))moveKeyboard(e.key,true);
+  if(e.repeat)return;
+  if(e.code==='ArrowLeft')targetTurn(-15);
+  if(e.code==='ArrowRight')targetTurn(15);
+  if(e.code==='KeyG')toggleGrip();if(e.code==='KeyM')beginTask();if(e.code==='KeyC')correct();
+  if(e.code==='KeyQ')targetTurn(-90);if(e.code==='KeyE')targetTurn(90);
+  if(e.code==='Space')brake();if(e.code==='KeyP'){running=!running&&!ended;pilot=null;routeIndex=-1}
+});
+window.addEventListener('keyup',e=>{if(moveKeys.has(e.key))moveKeyboard(e.key,false)});
+window.addEventListener('blur',()=>{keys={};robot.v=0;robot.omega=0});
+for(const b of document.querySelectorAll('[data-key]')){const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);b.classList.add('held');moveKeyboard(k,true)});const off=e=>{e.preventDefault();b.classList.remove('held');moveKeyboard(k,false)};b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('lostpointercapture',()=>{b.classList.remove('held');moveKeyboard(k,false)})}
+$('start').onclick=()=>{if(ended)return;say('연습 재개','ok');running=true};$('pause').onclick=()=>{running=false;keys={};pilot=null;routeIndex=-1;robot.v=0;robot.omega=0};$('restart').onclick=()=>reset();$('finish').onclick=finishGame;$('demo').onclick=startDemo;$('closeResults').onclick=()=>$('results').classList.remove('show');$('newTrial').onclick=()=>reset();$('exportResults').onclick=saveResult;$('turnLeftTouch').onclick=()=>targetTurn(-15);$('turnRightTouch').onclick=()=>targetTurn(15);$('restoreObjects').onclick=resetObjects;$('random').onclick=randomize;$('grabTouch').onclick=toggleGrip;$('missionTouch').onclick=beginTask;$('correctTouch').onclick=correct;$('brakeTouch').onclick=brake;$('left90').onclick=()=>targetTurn(-90);$('right90').onclick=()=>targetTurn(90);$('replay').onclick=replayStart;$('download').onclick=saveJSON;
+for(const o of allObjects()){const option=document.createElement('option');option.value=o.id;option.textContent=o.label;$('objectSelect').appendChild(option)}$('objectSelect').onchange=e=>{selected=e.target.value;updateSelect()};$('shiftX').oninput=e=>changeOffset('x',e.target.value);$('shiftY').oninput=e=>changeOffset('y',e.target.value);
+// Drag world objects within the allowed ±2 cm placement tolerance. Only while paused / not yet running.
+function pointerWorld(e){let r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*FW-OX,y:(e.clientY-r.top)/r.height*FH-OY}}
+canvas.addEventListener('pointerdown',e=>{let p=pointerWorld(e);let hit=allObjects().filter(o=>dist(o,p)<Math.max(4,o.r||4)).sort((a,b)=>dist(a,p)-dist(b,p))[0];let local=worldToLocal(p);
+if(!hit&&Math.abs(local.f)<=HALF_L&&Math.abs(local.l)<=HALF_W){if(running){say('로봇 이동은 일시정지 후 가능합니다','warn');return}pointerObject='__robot';canvas.setPointerCapture(e.pointerId);return}
+if(!hit)return;if(running){say('위치 편집은 일시정지 후 가능합니다','warn');return}selected=hit.id;pointerObject=hit.id;canvas.setPointerCapture(e.pointerId);updateSelect()});canvas.addEventListener('pointermove',e=>{if(!pointerObject)return;let p=pointerWorld(e);
+if(pointerObject==='__robot'){
+  if(!fixtureCollision(p.x,p.y,robot.a)){robot.x=p.x;robot.y=p.y;trail=[{x:p.x,y:p.y,t:0}];draw()}
+  return
+}
+let o=allObjects().find(o=>o.id===pointerObject);if(!o)return;let dx=clamp(p.x-o.ox,-2,2),dy=clamp(p.y-o.oy,-2,2);applyDeviation(o,Math.round(dx*10)/10,Math.round(dy*10)/10);updateSelect();draw()});const endDrag=e=>{if(!pointerObject)return;let id=pointerObject;pointerObject=null;
+if(id==='__robot'){const pos={x:robot.x,y:robot.y,a:robot.a};reset();Object.assign(robot,pos);trail=[{x:robot.x,y:robot.y,t:0}];record=[];lastRecord=-1;saveFrame();say('로봇 시작 위치 변경: ('+robot.x.toFixed(1)+', '+robot.y.toFixed(1)+')cm','ok',true);return}
+const o=allObjects().find(o=>o.id===id);let dx=o.baseDx||0,dy=o.baseDy||0;reset();o.baseDx=dx;o.baseDy=dy;o.x=o.ox+dx;o.y=o.oy+dy;updateSelect();say(o.label+' 배치 편차 저장: X '+dx.toFixed(1)+' / Y '+dy.toFixed(1)+'cm','ok')};canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);
+reset(true);requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
