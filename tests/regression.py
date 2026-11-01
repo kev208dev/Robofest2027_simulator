@@ -60,6 +60,18 @@ with sync_playwright() as playwright:
     assert page.evaluate("window.__rfTest.setPose(5, 5, 45)") is True
     print("Edge overhang and arm clearance: OK")
 
+    # Both ends have seven sensors across the 15cm central chassis.
+    page.evaluate("window.__rfTest.reset()")
+    sensors = page.evaluate("window.__rfTest.getState().sensors")
+    assert len(sensors["front"]) == 7 and len(sensors["back"]) == 7, sensors
+    assert page.locator("#sensors").inner_text().endswith("/7 · 0/7")
+    # Align front array with the black vertical start line at x=82cm.
+    assert page.evaluate("window.__rfTest.setPose(95.3, 37.5, 180)") is True
+    sensor_hits = page.evaluate("window.__rfTest.getState().sensors")
+    assert sum(bool(s["hit"]) for s in sensor_hits["front"]) == 7, sensor_hits
+    assert sum(bool(s["hit"]) for s in sensor_hits["back"]) == 0, sensor_hits
+    print("Dual seven-channel line sensors: OK")
+
     # Verify the reference route on the default object layout.
     page.locator("#newTrial").click()
     page.locator("#demo").click()
