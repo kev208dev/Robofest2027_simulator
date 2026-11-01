@@ -46,6 +46,20 @@ with sync_playwright() as playwright:
     assert page.evaluate("window.__rfTest.getState().t") > 120
     print("Overtime result: OK")
 
+    # Partial chassis overhang is legal; exactly 50% outside is not.
+    page.evaluate("window.__rfTest.reset()")
+    overhang = page.evaluate("window.__rfTest.bodyOutsideFraction(0.1, 30, 0)")
+    assert 0.49 < overhang < 0.5, overhang
+    assert page.evaluate("window.__rfTest.setPose(0.1, 30, 0)") is True
+    assert page.evaluate("window.__rfTest.setPose(0, 30, 0)") is not True
+    assert page.evaluate("window.__rfTest.setPose(91, 0.1, 90)") is True
+    assert page.evaluate("window.__rfTest.setPose(91, 0, 90)") is not True
+    # At x=161, facing east, the arm tip is at x>182; this must be allowed.
+    assert page.evaluate("window.__rfTest.setPose(161, 65, 0)") is True
+    # Rotated chassis near two adjacent field edges uses polygon area, not corners.
+    assert page.evaluate("window.__rfTest.setPose(5, 5, 45)") is True
+    print("Edge overhang and arm clearance: OK")
+
     # Verify the reference route on the default object layout.
     page.locator("#newTrial").click()
     page.locator("#demo").click()
