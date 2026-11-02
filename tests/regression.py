@@ -17,14 +17,29 @@ with sync_playwright() as playwright:
     page.on("pageerror", lambda error: errors.append(str(error)))
     page.set_content(HTML, wait_until="load")
 
-    # The front gripper can capture more than one object at once.
+    # The front gripper can capture more than one object at once (two litter pieces
+    # 6cm apart, both within the 3cm arm pocket). The Vet is a solid structure, so the
+    # old pose over it is now (correctly) rejected.
     page.evaluate("window.__rfTest.reset()")
-    assert page.evaluate("window.__rfTest.setPose(128,74.9,270)") is True
+    assert page.evaluate("window.__rfTest.setPose(128,74.9,270)") is not True
+    assert page.evaluate("window.__rfTest.setPose(112,22,270)") is True
     page.evaluate("window.__rfTest.grab()")
     held = page.evaluate("window.__rfTest.getState().robot.held")
-    assert "cat1" in held and "cat2" in held, held
+    assert "litter1" in held and "litter2" in held and "litter3" not in held, held
     assert page.evaluate("window.__rfTest.getState().armLength") == 3
+    # An object 26cm ahead is out of reach; one 14cm ahead (1.5cm past the nose) is captured.
+    page.evaluate("window.__rfTest.reset()")
+    assert page.evaluate("window.__rfTest.setPose(108,60,0)") is True
+    page.evaluate("window.__rfTest.grab()")
+    assert page.evaluate("window.__rfTest.getState().robot.held") == ["cat1"]
     print("Three-centimeter front arms and multi-object capture: OK")
+
+    # Start pose: just east of the start line, line directly ahead, facing west.
+    page.evaluate("window.__rfTest.reset()")
+    start = page.evaluate("window.__rfTest.getState().robot")
+    assert (start["x"], start["y"], start["a"]) == (96.5, 37.5, 180), start
+    assert page.evaluate("window.__rfTest.getState().sensors.front[3].p.x") > 82.95 + 1
+    print("Start pose east of the start line: OK")
 
     # Each arrow-key press queues a smooth 15-degree turn.
     page.evaluate("window.__rfTest.reset()")
@@ -90,6 +105,73 @@ with sync_playwright() as playwright:
     assert page.evaluate("window.__rfTest.setPose(107,37.5,0)") is True
     assert page.evaluate("window.__rfTest.missionNear({shape:'circle',x:131,y:38,r:9})") is True
     print("Three-centimeter mission reach: OK")
+
+    # Walled structures: a cat on the floor cannot be pushed into the Vet; the Pet Hotel
+    # task refuses when the arm is not centred on the 12cm bowl opening; food moves one
+    # piece at a time so the 120s snapshot only counts pieces moved by then.
+    page.evaluate("window.__rfTest.reset()")
+    assert page.evaluate("window.__rfTest.setPose(122,46,90)") is not True  # hotel blocks
+    # Capture the white cat from the west (lateral +5cm in the pocket), then carry it to
+    # the Groomer wall facing south. In the current layout a 25cm chassis cannot spin
+    # between the hotel and the Vet, so the Groomer is used for this geometry check.
+    assert page.evaluate("window.__rfTest.setPose(108,55,0)") is True
+    page.evaluate("window.__rfTest.grab()")
+    assert page.evaluate("window.__rfTest.getState().robot.held") == ["cat1"]
+    assert page.evaluate("window.__rfTest.forcePose(53.5,50,90)") is True
+    page.keyboard.down("ArrowUp"); page.evaluate("window.__rfTest.advance(3)"); page.keyboard.up("ArrowUp")
+    st = page.evaluate("window.__rfTest.getState()")
+    cat1 = next(o for o in st["objects"] if o["id"] == "cat1")
+    assert cat1["y"] < 72 - 2.6 + 0.2 and cat1["inside"] is None, cat1  # stopped at the wall
+    assert st["robot"]["y"] < 56, st["robot"]  # robot could not push the cat through the wall
+    assert st["score"]["parts"][6][1] == 5, st["score"]["parts"][6]  # moved, not in the Vet
+    page.evaluate("window.__rfTest.grab()")  # release in front of the wall -> still moved only
+    assert page.evaluate("window.__rfTest.getState().score.parts[6][1]") == 5
+    page.evaluate("window.__rfTest.reset()")
+    assert page.evaluate("window.__rfTest.setPose(106.5,24,0)") is True
+    page.keyboard.press("KeyM")
+    assert page.evaluate("window.__rfTest.getState().task") is None  # no food carried yet
+    page.evaluate("window.__rfTest.reset()")
+    assert page.evaluate("window.__rfTest.setPose(57,24,270)") is True
+    page.keyboard.press("KeyM")
+    page.evaluate("window.__rfTest.advance(6)")
+    counts = page.evaluate("window.__rfTest.getState().foodCounts")
+    assert counts["carried"] == 5 and counts["dispenser"] == 5, counts  # half-way through 12s
+    page.evaluate("window.__rfTest.advance(7)")
+    assert page.evaluate("window.__rfTest.getState().foodCounts")["carried"] == 10
+    assert page.evaluate("window.__rfTest.forcePose(106.5,24,0)") is True  # beside the bowl, 14cm off
+    page.keyboard.press("KeyM")
+    assert page.evaluate("window.__rfTest.getState().task") is None
+    assert page.evaluate("window.__rfTest.forcePose(106.5,38,0)") is True
+    page.keyboard.press("KeyM")
+    assert page.evaluate("window.__rfTest.getState().task.id") == "hotel"
+    print("Walled structures, bowl alignment, per-piece food transfer: OK")
+
+    # Lift scaffold: with an assumed lift the held orange cat is placed inside the Groomer.
+    page.evaluate("window.__rfTest.reset()")
+    page.fill("#liftMax", "8"); page.evaluate("document.activeElement.blur()")  # keys go to the page, not the input
+    assert page.evaluate("window.__rfTest.setPose(148,56,180)") is True
+    page.evaluate("window.__rfTest.grab()")
+    assert page.evaluate("window.__rfTest.getState().robot.held") == ["cat2"]
+    assert page.evaluate("window.__rfTest.forcePose(53.5,50,90)") is True
+    page.keyboard.press("KeyL"); page.evaluate("window.__rfTest.advance(4)")
+    assert page.evaluate("window.__rfTest.getState().lift.height") == 8
+    page.keyboard.down("ArrowUp"); page.evaluate("window.__rfTest.advance(3)"); page.keyboard.up("ArrowUp")
+    st = page.evaluate("window.__rfTest.getState()")
+    assert 59 < st["robot"]["y"] < 60, st["robot"]  # chassis nose stopped at the wall (y=72)
+    page.evaluate("window.__rfTest.grab()")
+    cat2 = next(o for o in page.evaluate("window.__rfTest.getState().objects") if o["id"] == "cat2")
+    assert cat2["inside"] == "groomer" and cat2["y"] >= 72, cat2
+    assert page.evaluate("window.__rfTest.getState().score.parts[7][1]") == 10
+    page.fill("#liftMax", "0"); page.evaluate("document.activeElement.blur()")
+    print("Lift scaffold (assumed lift) places cat inside Groomer: OK")
+
+    # Fixture contact is recorded as the scorecard's -10 'moved/damaged' penalty.
+    page.evaluate("window.__rfTest.reset()")
+    assert page.evaluate("window.__rfTest.setPose(57,24,270)") is True
+    page.keyboard.down("ArrowUp"); page.evaluate("window.__rfTest.advance(2)"); page.keyboard.up("ArrowUp")
+    assert page.evaluate("window.__rfTest.getState().contacts") == ["food"]
+    assert page.evaluate("window.__rfTest.getState().score.parts[11][1]") == -10
+    print("Fixture contact penalty: OK")
 
     # Verify the reference route on the default object layout.
     # #newTrial lives inside the hidden results dialog here (reset() closed it), so
