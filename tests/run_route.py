@@ -1,7 +1,7 @@
 """Run a simulator route headlessly and print a step-by-step trace.
 
 Usage:
-    python tests/run_route.py [basic|user] [--lift H] [--seed-random] [--start X Y A]
+    python tests/run_route.py [A] [--seed-random N] [--start X Y A]
 
 Prints every route step with the simulated clock, aborts (with pose and reason),
 the final score breakdown and the food/object state. Nothing is faked: the page
@@ -14,7 +14,7 @@ from playwright.sync_api import sync_playwright
 HTML = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
 
 ap = argparse.ArgumentParser()
-ap.add_argument("route", nargs="?", default="basic")
+ap.add_argument("route", nargs="?", default="A")
 
 
 ap.add_argument("--seed-random", type=int, default=None, help="apply ±2cm random placement with this seed")

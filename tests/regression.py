@@ -160,37 +160,12 @@ with sync_playwright() as playwright:
         assert r["y"] > 60, r
     print("Line tracing keeps the centre sensor on the tape: OK")
 
-    # Verify the reference route on the default object layout.
-    # #newTrial lives inside the hidden results dialog here (reset() closed it), so
-    # use the always-visible restart button, which calls the same reset().
+    # Saved route A (the only stored route), started from the UI button. Must finish within
+    # 120s on the default layout: dog, cats (zones), food via line-traced dispenser + hotel
+    # push, 3/3 litter in one push, Pet Toy, finish on the start line -> 100 points.
+    assert page.evaluate("window.__rfTest.routes") == ["A"]
     page.locator("#restart").click()
     page.locator("#demo").click()
-    result = page.evaluate("""() => {
-        let carriedFoodSeen = false;
-        for (let i = 0; i < 2300; i++) {
-            window.__rfTest.advance(0.1);
-            const state = window.__rfTest.getState();
-            carriedFoodSeen ||= state.foodCounts.carried === 10;
-            if (state.result || (state.routeIndex === -1 && i > 4))
-                return {...state, carriedFoodSeen};
-        }
-        return {...window.__rfTest.getState(), carriedFoodSeen};
-    }""")
-    assert result["result"], result["routeMessage"]
-    assert result["score"]["total"] == 61, result["score"]
-    assert result["carriedFoodSeen"], "Food never travelled with the robot"
-    assert result["foodCounts"] == {"dispenser": 0, "carried": 0, "hotel": 10}, result["foodCounts"]
-    page.wait_for_function("document.getElementById('foodStatus').textContent.trim() === '0 / 0 / 10'")
-    assert page.locator("#foodStatus").inner_text().strip() == "0 / 0 / 10"
-    print("Food dispenser -> robot -> hotel: 10 pieces, 20 points")
-    assert not errors, errors
-    print("Default reference route: 61/100 points, %.2fs" % result["t"])
-
-    # User-proposed sensor-based route (start line -> dog -> park -> line trace -> cats ->
-    # groomer pivot -> litter box -> pet toy -> finish) must complete within 120s on the
-    # default layout: dog, cats (zones), food via line-traced dispenser + hotel push,
-    # 3/3 litter in one push, Pet Toy, finish on the start line -> 100 points.
-    page.evaluate("window.__rfTest.startDemo('user')")
     result = page.evaluate("""() => {
         for (let i = 0; i < 2600; i++) {
             window.__rfTest.advance(0.1);
@@ -209,6 +184,6 @@ with sync_playwright() as playwright:
     assert parts["우편함 보존"] == 4, parts
     assert result["contacts"] == [], result["contacts"]
     assert not errors, errors
-    print("User-proposed route: %d/100 points, %.2fs" % (result["score"]["total"], result["t"]))
+    print("Route A: %d/100 points, %.2fs" % (result["score"]["total"], result["t"]))
     print("All regression tests passed.")
     browser.close()

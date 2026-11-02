@@ -29,10 +29,10 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="canvas-wrap"><canvas id="field" width="1120" height="566" tabindex="0" aria-label="182×75cm 경기장. 로봇은 키보드 방향키로 조종하고 G로 물체를 잡을 수 있습니다"></canvas></div>
 <div class="legend"><span><i style="background:#007847"></i>최근 주행 영역(폭 20cm)</span><span><i style="background:#f2b654"></i>앞 팔·집게</span><span><i style="background:#f78f73"></i>위치·방향 불확실성</span><span><i style="background:#191e24"></i>검은선</span></div>
 <div class="controls">
-<button class="primary" id="start">▶ 시작 / 재개</button><button id="pause">Ⅱ 일시정지</button><button id="finish" class="warning">■ 경기 종료 · 채점</button><button id="restart">↺ 로봇 초기화</button><button id="demo" class="primary">▶ 추천 경로 시험</button><button id="random">±2cm 랜덤 배치</button>
+<button class="primary" id="start">▶ 시작 / 재개</button><button id="pause">Ⅱ 일시정지</button><button id="finish" class="warning">■ 경기 종료 · 채점</button><button id="restart">↺ 로봇 초기화</button><button id="demo" class="primary">▶ A 경로 실행</button><button id="random">±2cm 랜덤 배치</button>
 <label class="small muted">배속 <select id="speed" class="speedSel"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
 </div>
-<div id="demoBox"><div class="row space"><b>추천 경로 시험 (기본 배치)</b><select id="routeSelect" class="speedSel"><option value="basic">기본 검증 경로</option><option value="user">사용자 제안 경로 (센서 기반)</option></select></div><p class="small muted" id="routeNote">시작 → Food Dispenser에서 사료 10개 적재 → 사료를 실은 채 Pet Hotel까지 주행 → 그릇에 10개 투입 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용합니다. 이 경로는 실제 물체 배치에 맞춘 검증용 예제이며, 다른 미션은 아직 포함하지 않습니다.</p><div class="small" id="demoState">수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.</div></div>
+<div id="demoBox"><div class="row space"><b>저장된 경로</b><select id="routeSelect" class="speedSel"><option value="A" selected>A 경로</option></select></div><p class="small muted" id="routeNote">출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.</p><div class="small" id="demoState">수동 조작 가능 · 저장된 경로는 직접 실행해야 합니다.</div></div>
 <div id="status" role="status">방향키를 누르거나 시작 버튼을 눌러 연습을 시작하세요. 자동 경로는 설정되지 않았습니다.</div>
 <div class="instructions"><strong>키보드 조작</strong> — <kbd>↑</kbd> 전진 <kbd>↓</kbd> 후진 <kbd>←</kbd><kbd>→</kbd> 누를 때마다 15°씩 부드럽게 회전 <kbd>Q</kbd><kbd>E</kbd> 90° 회전 <kbd>G</kbd> 3cm 앞 팔로 잡기/놓기 <kbd>M</kbd> 가까운 설비 미션 시작 <kbd>C</kbd> 센서 기준 보정 <kbd>Space</kbd> 정지 <kbd>P</kbd> 일시정지 · <kbd>Shift</kbd> 고속 주행</div>
 <div class="divider"></div>
@@ -416,7 +416,7 @@ if(travel>.005||turn>.005){let lastp=trail[trail.length-1];if(!lastp||Math.hypot
 hotelPushCheck();achieve();}
 function snapshot(){return {t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({id:o.id,x:o.x,y:o.y,ox:o.ox,oy:o.oy,baseDx:o.baseDx||0,baseDy:o.baseDy||0,r:o.r})),flags:{...achievements},task:task?{...task}:null,food:foods.map(f=>({...f})),contacts:[...fixtureContacts]}}
 function saveFrame(){if(replay)return;if(t-lastRecord<.085)return;record.push(snapshot());lastRecord=t;if(record.length>2000)record.shift()}
-function reset(restore=false){running=false;ended=false;replay=false;trialResult=null;limitFrame=null;routeIndex=-1;routeStarted=false;pilot=null;routeMessage='';$('results').classList.remove('show');$('demoState').textContent='수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.';replayT=0;t=0;Object.assign(robot,{...START,v:0,omega:0,autoAngle:null,gripper:false,held:[],slots:{},distance:0,turn:0,uncorrected:0,errPos:.3,errAng:.4,corrections:0});keys={};pointerObject=null;task=null;trail=[{x:robot.x,y:robot.y,t:0}];record=[];lastRecord=-1;cooldown=0;Object.keys(achievements).forEach(k=>achievements[k]=false);foods.forEach(f=>f.where='dispenser');fixtureContacts.clear();world.objects.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});world.fixtures.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});eventLogs=[];saveFrame();updateSelect();say('새 연습 준비 완료. 방향키 또는 시작을 눌러 주행하세요.','ok',true);draw();updateHUD()}
+function reset(restore=false){running=false;ended=false;replay=false;trialResult=null;limitFrame=null;routeIndex=-1;routeStarted=false;pilot=null;routeMessage='';$('results').classList.remove('show');$('demoState').textContent='수동 조작 가능 · 저장된 경로는 직접 실행해야 합니다.';replayT=0;t=0;Object.assign(robot,{...START,v:0,omega:0,autoAngle:null,gripper:false,held:[],slots:{},distance:0,turn:0,uncorrected:0,errPos:.3,errAng:.4,corrections:0});keys={};pointerObject=null;task=null;trail=[{x:robot.x,y:robot.y,t:0}];record=[];lastRecord=-1;cooldown=0;Object.keys(achievements).forEach(k=>achievements[k]=false);foods.forEach(f=>f.where='dispenser');fixtureContacts.clear();world.objects.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});world.fixtures.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});eventLogs=[];saveFrame();updateSelect();say('새 연습 준비 완료. 방향키 또는 시작을 눌러 주행하세요.','ok',true);draw();updateHUD()}
 function resetObjects(){reset(true);say('모든 물체를 기준 위치로 되돌렸습니다','ok',true)}
 function applyDeviation(o,dx,dy){o.baseDx=dx;o.baseDy=dy;o.x=o.ox+dx;o.y=o.oy+dy}
 function randomize(){reset();allObjects().forEach(o=>applyDeviation(o,Math.round((Math.random()*4-2)*10)/10,Math.round((Math.random()*4-2)*10)/10));updateSelect();say('모든 물체/설비에 X·Y 각각 ±2cm 배치 오차 적용','ok',true)}
@@ -429,28 +429,6 @@ function saveJSON(){const data={name:'ROBOFEST 2027 manual practice',food:foods.
 function moveKeyboard(key,active){if(replay)return;if(active&&!running&&!ended)running=true;if(ended)return;keys[key]=active;if(!active&&key==='Shift')keys.Shift=false}
 function targetTurn(amount){if(replay||task||ended)return;if(!running)running=true;robot.autoAngle=norm((robot.autoAngle!==null?robot.autoAngle:robot.a)+amount);say((amount<0?'반시계 ':'시계 ')+Math.abs(amount)+'° 예약 · 목표 '+robot.autoAngle.toFixed(1)+'°','ok')}
 function brake(){robot.v=0;robot.omega=0;robot.autoAngle=null;keys={};say('모터 정지 명령','ok')}
-// Test route uses only orthogonal motion and 90-degree turns.
-const demoRoute=[
- {kind:'drive',axis:'x',to:57,label:'서쪽 39.5cm → 디스펜서 접근'},
- {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
- {kind:'drive',axis:'y',to:24,label:'디스펜서 3cm 팔 접근 거리까지 정렬'},
- {kind:'task',id:'food',label:'사료 수거 10초'},
- {kind:'drive',axis:'y',to:38,label:'그릇 중심 높이(y=38)까지 후진'},
- {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
- {kind:'drive',axis:'x',to:109.6,label:'펫호텔 그릇까지 전진 · 팔 끝으로 사료 밀어 넣기'},
- {kind:'check',flag:'hotel',label:'사료 투입 확인'},
- {kind:'drive',axis:'x',to:85,label:'호텔에서 13cm 후진 · 배설물 회피'},
- {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
- {kind:'drive',axis:'y',to:18.5,label:'호텔 위쪽 통로 진입'},
- {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
- {kind:'drive',axis:'x',to:150,label:'호텔 위쪽 좁은 통로 통과 → Pet Toy 3cm 팔 접근'},
- {kind:'task',id:'toy',label:'Pet Toy 작업 10초'},
- {kind:'drive',axis:'x',to:85,label:'좁은 통로로 후진'},
- {kind:'turn',angle:90,label:'남쪽으로 90° 회전'},
- {kind:'drive',axis:'y',to:37.5,label:'출발선 높이로 이동'},
-
- {kind:'finish',label:'경기 종료 및 점수 계산'}
-];
 // ---- Route runner -------------------------------------------------------------------------
 // Step kinds (all reproducible by an encoder/line-sensor robot):
 //  drive {axis,to}            encoder drive until the chassis centre reaches a world coordinate
@@ -468,7 +446,8 @@ const demoRoute=[
 //  task {id}                  fixture mission (M)          finish
 // The user-proposed route follows the plan from 2026-11-02: start line → dog → park → line trace
 // → cats → groomer → litter box → pet toy → finish. Food Dispenser/Pet Hotel are not in it.
-const userRoute=[
+// A 경로 (saved 2026-11-02): the user's sensor-based full-mission route.
+const routeA=[
  {kind:'drive',until:{bank:'front',hit:'검은선',min:5},max:20,label:'출발선 검은선 감지까지 전진'},
  {kind:'correct',label:'출발선에서 센서 보정'},
  {kind:'drive',axis:'x',to:55.5,label:'디스펜서/그루머 x좌표(≈55)까지 직진'},
@@ -532,12 +511,11 @@ const userRoute=[
  {kind:'drive',dist:-8,label:'후진 조금 더 · 종료 위치'},
  {kind:'finish',label:'경기 종료 및 점수 계산'}
 ];
-const routes={basic:{label:'기본 검증 경로',steps:demoRoute,note:'시작 → Food Dispenser 사료 10개 적재 → Pet Hotel 그릇에 밀어 넣기 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용하는 검증용 예제입니다.'},
- user:{label:'사용자 제안 경로 (센서 기반)',steps:userRoute,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.'}};
-let activeRoute=demoRoute,stepStart=null;
+const routes={A:{label:'A 경로',steps:routeA,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.'}};
+let activeRoute=routeA,stepStart=null;
 function routeTarget(id){if(id&&typeof id==='object')return {r:0,label:'지점',...id};return world.objects.find(o=>o.id===id)||world.fixtures.find(f=>f.id===id)||(id==='dogpark'?{x:DOG_PARK.x+DOG_PARK.w/2,y:DOG_PARK.y+DOG_PARK.h/2,r:0,label:'Dog Park'}:null)}
 function startDemo(name){
-  const r=routes[name||$('routeSelect').value]||routes.basic;
+  const r=routes[name||$('routeSelect').value]||routes.A;
   reset(true);
   activeRoute=r.steps;activeRoute.forEach(st=>{delete st._armed;delete st._target});
   $('displayCorrect').checked=true;
