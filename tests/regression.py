@@ -163,7 +163,7 @@ with sync_playwright() as playwright:
     # Saved route A (the only stored route), started from the UI button. Must finish within
     # 120s on the default layout: dog, cats (zones), food via line-traced dispenser + hotel
     # push, 3/3 litter in one push, Pet Toy, finish on the start line -> 100 points.
-    assert page.evaluate("window.__rfTest.routes") == ["A"]
+    assert page.evaluate("window.__rfTest.routes") == ["A", "B"]
     page.locator("#restart").click()
     page.locator("#demo").click()
     result = page.evaluate("""() => {
@@ -185,5 +185,22 @@ with sync_playwright() as playwright:
     assert result["contacts"] == [], result["contacts"]
     assert not errors, errors
     print("Route A: %d/100 points, %.2fs" % (result["score"]["total"], result["t"]))
+
+    # Route B = A without the Pet Toy: same missions up to the litter box, then stops on the
+    # start line. Must score 90 well inside the limit (slack for a slower real robot).
+    page.evaluate("window.__rfTest.startDemo('B')")
+    result = page.evaluate("""() => {
+        for (let i = 0; i < 2600; i++) {
+            window.__rfTest.advance(0.1);
+            const state = window.__rfTest.getState();
+            if (state.result || (state.routeIndex === -1 && i > 4)) return state;
+        }
+        return window.__rfTest.getState();
+    }""")
+    assert result["result"], result["routeMessage"]
+    parts = {p[0].split(" (")[0]: p[1] for p in result["score"]["parts"]}
+    assert result["score"]["total"] == 90 and parts["Pet Toy"] == 0, result["score"]
+    assert result["t"] < 90, result["t"]
+    print("Route B: %d/100 points, %.2fs" % (result["score"]["total"], result["t"]))
     print("All regression tests passed.")
     browser.close()

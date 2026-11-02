@@ -29,10 +29,10 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="canvas-wrap"><canvas id="field" width="1120" height="566" tabindex="0" aria-label="182×75cm 경기장. 로봇은 키보드 방향키로 조종하고 G로 물체를 잡을 수 있습니다"></canvas></div>
 <div class="legend"><span><i style="background:#007847"></i>최근 주행 영역(폭 20cm)</span><span><i style="background:#f2b654"></i>앞 팔·집게</span><span><i style="background:#f78f73"></i>위치·방향 불확실성</span><span><i style="background:#191e24"></i>검은선</span></div>
 <div class="controls">
-<button class="primary" id="start">▶ 시작 / 재개</button><button id="pause">Ⅱ 일시정지</button><button id="finish" class="warning">■ 경기 종료 · 채점</button><button id="restart">↺ 로봇 초기화</button><button id="demo" class="primary">▶ A 경로 실행</button><button id="random">±2cm 랜덤 배치</button>
+<button class="primary" id="start">▶ 시작 / 재개</button><button id="pause">Ⅱ 일시정지</button><button id="finish" class="warning">■ 경기 종료 · 채점</button><button id="restart">↺ 로봇 초기화</button><button id="demo" class="primary">▶ 선택한 경로 실행</button><button id="random">±2cm 랜덤 배치</button>
 <label class="small muted">배속 <select id="speed" class="speedSel"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
 </div>
-<div id="demoBox"><div class="row space"><b>저장된 경로</b><select id="routeSelect" class="speedSel"><option value="A" selected>A 경로</option></select></div><p class="small muted" id="routeNote">출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.</p><div class="small" id="demoState">수동 조작 가능 · 저장된 경로는 직접 실행해야 합니다.</div></div>
+<div id="demoBox"><div class="row space"><b>저장된 경로</b><select id="routeSelect" class="speedSel"><option value="A" selected>A 경로</option><option value="B">B 경로 (Pet Toy 제외)</option></select></div><p class="small muted" id="routeNote">출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.</p><div class="small" id="demoState">수동 조작 가능 · 저장된 경로는 직접 실행해야 합니다.</div></div>
 <div id="status" role="status">방향키를 누르거나 시작 버튼을 눌러 연습을 시작하세요. 자동 경로는 설정되지 않았습니다.</div>
 <div class="instructions"><strong>키보드 조작</strong> — <kbd>↑</kbd> 전진 <kbd>↓</kbd> 후진 <kbd>←</kbd><kbd>→</kbd> 누를 때마다 15°씩 부드럽게 회전 <kbd>Q</kbd><kbd>E</kbd> 90° 회전 <kbd>G</kbd> 3cm 앞 팔로 잡기/놓기 <kbd>M</kbd> 가까운 설비 미션 시작 <kbd>C</kbd> 센서 기준 보정 <kbd>Space</kbd> 정지 <kbd>P</kbd> 일시정지 · <kbd>Shift</kbd> 고속 주행</div>
 <div class="divider"></div>
@@ -511,7 +511,13 @@ const routeA=[
  {kind:'drive',dist:-8,label:'후진 조금 더 · 종료 위치'},
  {kind:'finish',label:'경기 종료 및 점수 계산'}
 ];
-const routes={A:{label:'A 경로',steps:routeA,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.'}};
+// B 경로: A without the Pet Toy (lowest points per second) for when the real run is slower.
+// Shares every step of A up to the start-line correction after the Litter Box.
+const routeB=[...routeA.slice(0,routeA.findIndex(s=>s.label==='출발선 보정')+1),
+ {kind:'drive',dist:-6,label:'출발선 위로 6cm 후진 (차체가 선에 걸치게 · 종료 위치)'},
+ {kind:'finish',label:'경기 종료 및 점수 계산'}].map(s=>({...s}));
+const routes={A:{label:'A 경로',steps:routeA,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.'},
+ B:{label:'B 경로 (Pet Toy 제외 단축)',steps:routeB,note:'A 경로와 같고 Pet Toy만 뺀 단축 경로입니다. 강아지 → 고양이 2마리 → 사료/Pet Hotel → Litter Box → 출발선 보정 후 그 자리에서 종료. 실제 주행이 느려 A가 120초를 넘길 때 사용합니다.'}};
 let activeRoute=routeA,stepStart=null;
 function routeTarget(id){if(id&&typeof id==='object')return {r:0,label:'지점',...id};return world.objects.find(o=>o.id===id)||world.fixtures.find(f=>f.id===id)||(id==='dogpark'?{x:DOG_PARK.x+DOG_PARK.w/2,y:DOG_PARK.y+DOG_PARK.h/2,r:0,label:'Dog Park'}:null)}
 function startDemo(name){
