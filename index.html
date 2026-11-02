@@ -99,8 +99,9 @@ const SENSOR_LATERALS=Array.from({length:7},(_,i)=>(i-3)*2.2);
 const $=id=>document.getElementById(id), canvas=$('field'),ctx=canvas.getContext('2d');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),norm=a=>(a%360+360)%360,rad=a=>a*DEG,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 // Fixtures block the chassis. `container` fixtures accept game objects inside them;
-// `walled` containers (Vet, Groomer) can only receive an object that is lifted over the wall
-// (official structures are approx. 20x5cm; exact wall height is not published, see liftSettings).
+// `walled` containers (Vet, Groomer) can only receive an object that is lifted over the wall.
+// Official materials list: Vet/Groomer/Litter Box are 'about 20cm x 5cm' structures (read here as
+// length x height; the footprint depth below comes from the previous field drawing and is unverified).
 // The hotel bowl is 17.5cm at the base with a 12cm opening (official materials list).
 const world={fixtures:[{id:'food',label:'사료 디스펜서',x:57,y:4,ox:57,oy:4,shape:'rect',w:12,h:8,color:'#679bbd',penalty:true},
 {id:'hotel',label:'펫호텔',x:131,y:38,ox:131,oy:38,shape:'circle',r:8.75,opening:6,color:'#b5b1b2'},
@@ -484,7 +485,8 @@ const demoRoute=[
 //  drive {axis,to}            encoder drive until the chassis centre reaches a world coordinate
 //  drive {dist}               encoder drive by a signed distance (negative = reverse)
 //  drive {reverse,until:{bank:'front'|'back',hit:'검은선'|'경계',min:n},max}  drive until sensors fire
-//  drive {untilNear:{object,f}} drive until the object's local forward offset ≤ f (inside the pocket)
+//  drive {untilNear:{object[,f]}} drive until the object touches the nose / is at local offset f
+//  drive {untilMission:fixture}  drive until the fixture is within the arm's mission reach
 //  drive {...,tolerant:true}  a blocked pose ends the step instead of aborting the route (push to a wall)
 //  turn {angle} | turn {by}   absolute heading / relative turn (+ = right/clockwise on screen)
 //  aim {target}               turn to face an object or fixture (used where the field drawing is
@@ -499,7 +501,7 @@ const userRoute=[
  {kind:'correct',label:'출발선에서 센서 보정'},
  {kind:'drive',axis:'x',to:55.5,label:'디스펜서/그루머 x좌표(≈55)까지 직진'},
  {kind:'aim',target:'dog',plan:'우 45° 회전',label:'강아지 방향으로 회전 (안: 우 45°)'},
- {kind:'drive',untilNear:{object:'dog',f:14},max:80,label:'강아지 포획 거리까지 전진'},
+ {kind:'drive',untilNear:{object:'dog'},max:80,label:'강아지 포획 거리까지 전진'},
  {kind:'grip',expect:['dog'],label:'강아지 포획'},
  {kind:'turn',angle:270,plan:'우 45° 회전',label:'북쪽으로 회전 (안: 우 45°)'},
  {kind:'drive',until:{bank:'front',hit:'경계',min:5},max:40,label:'북쪽 낭떠러지 감지까지 전진'},
@@ -516,36 +518,43 @@ const userRoute=[
  {kind:'drive',dist:11.1,label:'조금 더 직진 (차체 중심을 선 위로)'},
  {kind:'turn',angle:90,label:'우 90° 회전 (남쪽)'},
  {kind:'drive',until:{bank:'front',hit:'경계',min:5},max:40,label:'출발선 라인트레이싱 → 남쪽 낭떠러지까지'},
+ {kind:'drive',dist:-4.4,label:'후진 4.4cm (현재 배치: 고양이 높이 y≈57에서 회전 공간 확보)'},
  {kind:'turn',angle:0,label:'좌 90° 회전 (동쪽)'},
- {kind:'drive',untilNear:{object:'cat1',f:14},max:50,label:'흰 고양이 포획 거리까지만 전진'},
+ {kind:'drive',untilNear:{object:'cat1'},max:50,label:'흰 고양이 포획 거리까지만 전진'},
  {kind:'grip',expect:['cat1'],forbid:['cat2'],label:'흰 고양이만 포획'},
- {kind:'turn',angle:90,label:'우 90° 회전 (Vet 방향)'},
+ {kind:'pivot',wheel:'left',by:90,plan:'우 90° 제자리 회전',label:'왼쪽 바퀴 고정 피벗 → 남쪽 (현재 배치: 제자리 회전은 고양이가 Vet 벽에 걸림)'},
  {kind:'lift',up:true,optional:true,label:'리프트 상승 (설정 시)'},
- {kind:'drive',dist:12,tolerant:true,label:'Vet 벽까지 전진'},
- {kind:'release',label:'흰 고양이 Vet에 넣기 (리프트 없으면 벽 앞)'},
+ {kind:'drive',dist:12,tolerant:true,label:'남쪽으로 전진 (Vet 벽/가장자리까지)'},
+ {kind:'release',label:'흰 고양이 놓기 (현재 배치: Vet 서쪽 밖 → 이동 점수만)'},
  {kind:'lift',up:false,optional:true,label:'리프트 하강'},
- {kind:'drive',dist:-12,label:'후진'},
- {kind:'turn',angle:0,label:'좌 90° 회전 (동쪽)'},
- {kind:'drive',untilNear:{object:'cat2',f:14},max:40,label:'주황 고양이 포획 거리까지 전진'},
+ {kind:'drive',axis:'y',to:48.25,reverse:true,label:'후진하여 피벗 위치로'},
+ {kind:'pivot',wheel:'left',by:-90,label:'왼쪽 바퀴 고정 역피벗 → 동쪽 (y≈57 복귀)'},
+ {kind:'drive',untilNear:{object:'cat2'},max:40,label:'주황 고양이 포획 거리까지 전진'},
  {kind:'grip',expect:['cat2'],label:'주황 고양이 포획'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선 감지까지 후진'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:1},max:50,label:'그루머 앞 검은선 감지까지 후진'},
- {kind:'pivot',wheel:'left',by:90,label:'왼쪽 바퀴 고정 · 오른쪽 바퀴 후진 피벗 (Groomer 바라보기)'},
+ {kind:'drive',dist:-10,label:'후진 10cm (피벗 후 고양이가 Groomer 폭 안에 오도록)'},
+ {kind:'pivot',wheel:'left',by:90,label:'왼쪽 바퀴 고정 · 오른쪽 바퀴 후진 피벗 → 남쪽 (Groomer 바라보기)'},
  {kind:'lift',up:true,optional:true,label:'리프트 상승 (설정 시)'},
- {kind:'drive',until:{bank:'front',hit:'경계',min:5},tolerant:true,max:30,label:'Groomer 벽까지 전진'},
- {kind:'release',label:'주황 고양이 Groomer에 넣기 (리프트 없으면 벽 앞)'},
+ {kind:'drive',axis:'y',to:58,tolerant:true,label:'Groomer 앞까지 전진 (고양이가 구조물 안 y≈73.5에 오는 위치)'},
+ {kind:'release',label:'주황 고양이 놓기 (리프트 없으면 벽 앞)'},
  {kind:'lift',up:false,optional:true,label:'리프트 하강'},
  {kind:'drive',axis:'y',to:37.5,reverse:true,label:'후진하여 중점(y≈37.5)으로'},
  {kind:'turn',by:-180,label:'좌 180° 회전 (디스펜서 방향)'},
- {kind:'drive',until:{bank:'front',hit:'검은선',min:1},max:30,label:'검은선 감지까지 전진'},
- {kind:'aim',target:'litter',plan:'살짝 우회전',label:'Litter Box 방향 회전'},
- {kind:'drive',untilNear:{object:'litter',f:16},max:90,tolerant:true,label:'Litter Box까지 전진 · 배터리 밀어 넣기'},
- {kind:'drive',dist:-6,label:'살짝 후진'},
- {kind:'turn',by:70,label:'우 70° 회전'},
+ {kind:'drive',axis:'y',to:24,label:'디스펜서 앞 y=24까지 전진 (검은선 x=54 옆 · 회전 반경 16cm 확보)'},
+ {kind:'turn',angle:0,plan:'살짝 우회전하여 Litter Box 바라보기',label:'동쪽으로 회전 (현재 배치: 호텔·화장실 사이 통로 y=24)'},
+ {kind:'drive',axis:'x',to:110.5,label:'화장실 앞 대기점(110.5,24)까지 동진'},
+ {kind:'turn',angle:270,label:'북쪽으로 회전 (배터리 1·2는 차체 폭 안, 3은 현재 배치에서 폭 밖)'},
+ {kind:'drive',dist:30,tolerant:true,label:'Litter Box 벽에 막힐 때까지 전진 · 배터리 밀어 넣기'},
+ {kind:'drive',axis:'y',to:24,reverse:true,label:'후진하여 회전 공간 확보'},
+ {kind:'turn',angle:0,plan:'우 70° 회전',label:'동쪽으로 회전 (현재 배치: 출발선이 정서쪽이라 90°)'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선 감지까지 후진'},
  {kind:'correct',label:'출발선 보정'},
- {kind:'aim',target:'toy',label:'Pet Toy 방향 회전'},
- {kind:'drive',untilNear:{object:'toy',f:16},max:100,label:'Pet Toy까지 직진'},
+ {kind:'drive',dist:-8,label:'후진 8cm (밀려난 배터리와 팔 간섭 회피)'},
+ {kind:'turn',angle:270,label:'북쪽으로 회전 (현재 배치: 펫호텔 위 통로 y≤18.7 맞추기)'},
+ {kind:'drive',axis:'y',to:18.5,label:'통로 높이 y=18.5로'},
+ {kind:'turn',angle:0,plan:'Pet Toy 바라보기',label:'동쪽(Pet Toy 방향)으로 회전'},
+ {kind:'drive',untilMission:'toy',max:100,label:'펫호텔 위 통로로 Pet Toy까지 직진'},
  {kind:'task',id:'toy',label:'Pet Toy 작업'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:100,label:'출발선까지 후진'},
  {kind:'correct',label:'출발선 보정'},
@@ -556,11 +565,11 @@ const userRoute=[
 const routes={basic:{label:'기본 검증 경로',steps:demoRoute,note:'시작 → Food Dispenser 사료 10개 적재 → Pet Hotel 투입 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용하는 검증용 예제입니다.'},
  user:{label:'사용자 제안 경로 (센서 기반)',steps:userRoute,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet) → 주황 고양이(Groomer, 피벗 회전) → Litter Box → Pet Toy → 출발선 복귀. 리프트 미설정 시 고양이는 벽 앞에 내려놓습니다(이동 점수만).'}};
 let activeRoute=demoRoute,stepStart=null;
-function routeTarget(id){return world.objects.find(o=>o.id===id)||world.fixtures.find(f=>f.id===id)||(id==='dogpark'?{x:DOG_PARK.x+DOG_PARK.w/2,y:DOG_PARK.y+DOG_PARK.h/2,r:0,label:'Dog Park'}:null)}
+function routeTarget(id){if(id&&typeof id==='object')return {r:0,label:'지점',...id};return world.objects.find(o=>o.id===id)||world.fixtures.find(f=>f.id===id)||(id==='dogpark'?{x:DOG_PARK.x+DOG_PARK.w/2,y:DOG_PARK.y+DOG_PARK.h/2,r:0,label:'Dog Park'}:null)}
 function startDemo(name){
   const r=routes[name||$('routeSelect').value]||routes.basic;
   reset(true);
-  activeRoute=r.steps;
+  activeRoute=r.steps;activeRoute.forEach(st=>{delete st._armed;delete st._target});
   $('displayCorrect').checked=true;
   routeIndex=0;routeStarted=false;running=true;routeMessage=r.label+' · 기본 물체 배치로 주행 시험 중';
   say(r.label+' 시작','ok',true);
@@ -572,7 +581,7 @@ function demoUpdate(dt){
   if(routeIndex>=activeRoute.length){routeIndex=-1;pilot=null;return}
   const c=activeRoute[routeIndex];
   $('demoState').textContent=`${routeIndex+1}/${activeRoute.length} · ${c.label}`;
-  const next=()=>{routeIndex++;routeStarted=false;pilot=null;robot.v=0;robot.omega=0;stepStart=null};
+  const next=()=>{delete c._armed;routeIndex++;routeStarted=false;pilot=null;robot.v=0;robot.omega=0;stepStart=null};
   const profile=(gap,sign=1)=>Math.abs(gap)<.30?0:sign*Math.sign(gap)*Math.min(21,Math.sqrt(Math.max(0,2*25*Math.abs(gap))));
   if(!routeStarted&&c.kind!=='finish'){stepStart={x:robot.x,y:robot.y,a:robot.a,distance:robot.distance,t};say((routeIndex+1)+'/'+activeRoute.length+' '+c.label,'ok',true)}
   const blocked=pilot&&pilot.blocked;
@@ -598,8 +607,9 @@ function demoUpdate(dt){
     let speed=0,done=false;
     if(c.axis){const gap=c.to-robot[c.axis],proj=c.axis==='x'?Math.cos(rad(robot.a)):Math.sin(rad(robot.a));speed=proj===0?0:profile(gap/proj);done=Math.abs(gap)<.30&&Math.abs(robot.v)<1.1}
     else if(c.dist!==undefined){const gap=Math.abs(c.dist)-travelled;speed=profile(gap,Math.sign(c.dist));done=gap<.30&&Math.abs(robot.v)<1.1}
-    else if(c.until){const n=sensorCount(c.until.bank,c.until.hit);done=n>=(c.until.min||5);speed=done?0:sign*(c.speed||14)}
-    else if(c.untilNear){const o=routeTarget(c.untilNear.object);if(!o){abortRoute('대상 없음');return}const p=worldToLocal(o);done=p.f<=c.untilNear.f&&Math.abs(p.l)<=ARM_MOUTH_HALF+1.5;const gap=p.f-c.untilNear.f;speed=done?0:profile(Math.max(gap,0.5))*sign;if(!done&&Math.abs(p.l)>ARM_MOUTH_HALF+3&&p.f<c.untilNear.f+6){abortRoute(c.label+' · '+(o.label||c.untilNear.object)+' 측방 어긋남 '+p.l.toFixed(1)+'cm');return}}
+    else if(c.until){const n=sensorCount(c.until.bank,c.until.hit);if(c._armed===undefined)c._armed=n===0;if(!c._armed&&n===0)c._armed=true;done=c._armed&&n>=(c.until.min||5);speed=done?0:sign*(c.speed||14)}
+    else if(c.untilMission){const f=world.fixtures.find(x=>x.id===c.untilMission);done=missionNear(f);const p=worldToLocal(f);speed=done?0:profile(Math.max(p.f-HALF_L,0.5))*sign}
+    else if(c.untilNear){const o=routeTarget(c.untilNear.object);if(!o){abortRoute('대상 없음');return}const p=worldToLocal(o),want=c.untilNear.f!==undefined?c.untilNear.f:HALF_L+(o.r||0)+.6;done=p.f<=want&&Math.abs(p.l)<=ARM_MOUTH_HALF+1.5;const gap=p.f-want;speed=done?0:profile(Math.max(gap,0.5))*sign;if(!done&&Math.abs(p.l)>ARM_MOUTH_HALF+3&&p.f<want+6){abortRoute(c.label+' · '+(o.label||c.untilNear.object)+' 측방 어긋남 '+p.l.toFixed(1)+'cm');return}}
     pilot={driveSpeed:speed,tolerant:!!c.tolerant};
     if(done&&(c.until||c.untilNear)){robot.v=0}
     if(done)next();

@@ -70,6 +70,9 @@ with sync_playwright() as pw:
     print("food:", st["foodCounts"], " contacts:", st["contacts"], " achievements:", {k: v for k, v in st["achievements"].items() if v})
     print("objects:", {o["id"]: (round(o["x"], 1), round(o["y"], 1), o.get("inside")) for o in st["objects"]})
     print("page errors:", errors or "none")
+    print("last log lines:")
+    for line in page.locator("#logs").inner_text().splitlines()[:8]:
+        print("   ", line)
     if args.json:
         print(json.dumps(st, ensure_ascii=False)[:4000])
     browser.close()

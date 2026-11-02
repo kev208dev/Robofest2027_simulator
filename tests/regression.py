@@ -198,5 +198,27 @@ with sync_playwright() as playwright:
     print("Food dispenser -> robot -> hotel: 10 pieces, 20 points")
     assert not errors, errors
     print("Default reference route: 61/100 points, %.2fs" % result["t"])
+
+    # User-proposed sensor-based route (start line -> dog -> park -> line trace -> cats ->
+    # groomer pivot -> litter box -> pet toy -> finish) must complete within 120s on the
+    # default layout without a lift. Cats stay "moved only" (walls) and one litter piece
+    # is out of the chassis width in the current layout, so the honest score is 67.
+    page.evaluate("window.__rfTest.startDemo('user')")
+    result = page.evaluate("""() => {
+        for (let i = 0; i < 2600; i++) {
+            window.__rfTest.advance(0.1);
+            const state = window.__rfTest.getState();
+            if (state.result || (state.routeIndex === -1 && i > 4)) return state;
+        }
+        return window.__rfTest.getState();
+    }""")
+    assert result["result"], result["routeMessage"]
+    assert result["t"] < 120, result["t"]
+    assert result["score"]["total"] >= 65, result["score"]
+    parts = {p[0].split(" (")[0]: p[1] for p in result["score"]["parts"]}
+    assert parts["강아지 이동"] == 10 and parts["Pet Toy"] == 10, parts
+    assert result["contacts"] == [], result["contacts"]
+    assert not errors, errors
+    print("User-proposed route: %d/100 points, %.2fs" % (result["score"]["total"], result["t"]))
     print("All regression tests passed.")
     browser.close()
