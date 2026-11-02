@@ -34,7 +34,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 </div>
 <div id="demoBox"><div class="row space"><b>추천 경로 시험 (기본 배치)</b><select id="routeSelect" class="speedSel"><option value="basic">기본 검증 경로</option><option value="user">사용자 제안 경로 (센서 기반)</option></select></div><p class="small muted" id="routeNote">시작 → Food Dispenser에서 사료 10개 적재 → 사료를 실은 채 Pet Hotel까지 주행 → 그릇에 10개 투입 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용합니다. 이 경로는 실제 물체 배치에 맞춘 검증용 예제이며, 다른 미션은 아직 포함하지 않습니다.</p><div class="small" id="demoState">수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.</div></div>
 <div id="status" role="status">방향키를 누르거나 시작 버튼을 눌러 연습을 시작하세요. 자동 경로는 설정되지 않았습니다.</div>
-<div class="instructions"><strong>키보드 조작</strong> — <kbd>↑</kbd> 전진 <kbd>↓</kbd> 후진 <kbd>←</kbd><kbd>→</kbd> 누를 때마다 15°씩 부드럽게 회전 <kbd>Q</kbd><kbd>E</kbd> 90° 회전 <kbd>G</kbd> 3cm 앞 팔로 잡기/놓기 <kbd>M</kbd> 가까운 설비 미션 시작 <kbd>L</kbd> 리프트 올림/내림(설정 시) <kbd>C</kbd> 센서 기준 보정 <kbd>Space</kbd> 정지 <kbd>P</kbd> 일시정지 · <kbd>Shift</kbd> 고속 주행</div>
+<div class="instructions"><strong>키보드 조작</strong> — <kbd>↑</kbd> 전진 <kbd>↓</kbd> 후진 <kbd>←</kbd><kbd>→</kbd> 누를 때마다 15°씩 부드럽게 회전 <kbd>Q</kbd><kbd>E</kbd> 90° 회전 <kbd>G</kbd> 3cm 앞 팔로 잡기/놓기 <kbd>M</kbd> 가까운 설비 미션 시작 <kbd>C</kbd> 센서 기준 보정 <kbd>Space</kbd> 정지 <kbd>P</kbd> 일시정지 · <kbd>Shift</kbd> 고속 주행</div>
 <div class="divider"></div>
 <div class="row space" style="margin-bottom:8px"><h2 style="margin:0">화면 터치 조종</h2><span class="muted small">전진·후진은 홀드 / 회전은 1회 15°</span></div>
 <div class="touch">
@@ -42,7 +42,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <button class="empty" disabled>·</button><button data-key="ArrowUp">↑ 전진</button><button class="empty" disabled>·</button>
 <button id="turnLeftTouch">↶ 15°</button><button data-key="ArrowDown">↓ 후진</button><button id="turnRightTouch">↷ 15°</button>
 </div>
-<div class="actions"><button id="grabTouch">G · 집기/놓기</button><button id="missionTouch">M · 미션</button><button id="correctTouch">C · 보정</button><button id="liftTouch">L · 리프트</button><button id="brakeTouch">■ 정지</button><button id="left90">↶ 90°</button><button id="right90">↷ 90°</button></div>
+<div class="actions"><button id="grabTouch">G · 집기/놓기</button><button id="missionTouch">M · 미션</button><button id="correctTouch">C · 보정</button><button id="brakeTouch">■ 정지</button><button id="left90">↶ 90°</button><button id="right90">↷ 90°</button></div>
 </div>
 <div class="footer">이 시뮬레이터의 방향키는 <strong>경로를 연구하기 위한 연습 조작</strong>입니다. 실제 대회는 로봇의 자율주행이 필요합니다. 물체 크기·관성·작업시간은 일부 단순화한 모델이며 실제 경기 규정과 동일한 물리 엔진이 아닙니다. 공식 경기는 120초에 종료됩니다.</div>
 </section>
@@ -72,12 +72,9 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="row" style="margin-top:10px"><button id="restoreObjects">물체 기본 위치</button><label class="check"><input type="checkbox" id="showTrail" checked> 바퀴 자취 표시</label></div>
 <p class="muted small">조정은 경기 전 배치 오차를 가정한 것입니다. 일시정지 상태에서 로봇을 끌어서 시작 위치도 바꿀 수 있습니다. 주행 중 밀려서 이동한 물체는 편차 제한 없이 움직입니다. 재배치 시 연습 기록은 초기화됩니다.</p></div>
 <div class="section"><h2>고난도 미션 작업시간 설정</h2>
-<div class="settings"><div class="setting"><label for="timeToy">Pet Toy (초)</label><input id="timeToy" type="number" min="1" max="60" value="10"></div><div class="setting"><label for="timeFood">Food Dispenser (초)</label><input id="timeFood" type="number" min="1" max="60" value="10"></div><div class="setting"><label for="timeHotel">Pet Hotel (초)</label><input id="timeHotel" type="number" min="1" max="60" value="5"></div><div class="setting"><label for="speedMax">최대 속도 (cm/s)</label><input id="speedMax" type="number" min="5" max="45" value="26"></div></div>
-<p class="muted small">설비 가까이에서 <b>M</b>을 누르면 작업시간이 경과하며 주행이 잠깁니다. 사료는 작업시간 동안 한 개씩 옮겨지므로 120초 시점에는 그때까지 옮긴 개수만 인정됩니다. 120초를 넘겨도 연습을 이어갈 수 있지만, 종료 시 시간 초과가 표시됩니다.</p>
+<div class="settings"><div class="setting"><label for="timeToy">Pet Toy (초)</label><input id="timeToy" type="number" min="1" max="60" value="10"></div><div class="setting"><label for="timeFood">Food Dispenser (초)</label><input id="timeFood" type="number" min="1" max="60" value="10"></div><div class="setting"><label for="speedMax">최대 속도 (cm/s)</label><input id="speedMax" type="number" min="5" max="45" value="26"></div></div>
+<p class="muted small">설비 가까이에서 <b>M</b>을 누르면 작업시간이 경과하며 주행이 잠깁니다. 사료 수거는 작업시간 동안 한 개씩 로봇에 실리고, Pet Hotel은 작업 없이 팔 끝을 그릇 개구부까지 밀어 넣으면 실린 사료가 들어갑니다. Litter Box·Vet·Groomer는 구역으로 가정해 물체가 구역에 걸치기만 해도 인정됩니다. 120초를 넘겨도 연습을 이어갈 수 있지만, 종료 시 시간 초과가 표시됩니다.</p>
 <div class="settings" style="margin-top:8px"><div class="setting"><label for="utfMode">종료 과제 정지 기준 (UTF 예시)</label><select id="utfMode"><option value="line" selected>출발선(x=82) 위에 차체 일부 (Jr 예시)</option><option value="south">남쪽 가장자리 위에 차체 일부 (Sr 예시)</option></select></div><div class="setting" style="display:flex;align-items:end"><label class="check"><input id="displayCorrect" type="checkbox" checked> 디스플레이 정답 표시 (연습 가정)</label></div></div></div>
-<div class="section"><h2>리프트 (미구현 · 실험용 가정)</h2>
-<div class="settings"><div class="setting"><label for="liftMax">리프트 최대 높이 (cm, 0 = 미설치)</label><input id="liftMax" type="number" min="0" max="30" step="0.5" value="0"></div><div class="setting"><label for="liftSpeed">리프트 속도 (cm/s)</label><input id="liftSpeed" type="number" min="0.5" max="20" step="0.5" value="3"></div><div class="setting"><label for="wallHeight">Vet/Groomer 벽 높이 (cm, 미확정이면 비움)</label><input id="wallHeight" type="number" min="0" max="30" step="0.5" placeholder="미확정"></div><div class="setting"><label>리프트 상태</label><strong id="liftState">미설치 (0cm)</strong></div></div>
-<p class="muted small">실제 로봇의 리프트는 아직 완성되지 않았습니다. 최대 높이를 0으로 두면 2D 주행 모델만 사용하며, 고양이는 Vet/Groomer 벽을 넘을 수 없습니다. 높이를 입력하면 <b>L</b> 키로 집게를 올리고 내려 벽 너머에 놓는 동작을 가정합니다. 벽 높이를 비워 두면 리프트가 최대 높이까지 올라가야 통과합니다. 공식 구조물 높이는 규정에 명시되어 있지 않습니다.</p></div>
 <div class="section"><h2>경로 기록과 다시보기</h2><div class="rightbuttons"><button id="replay">▶ 기록 재생</button><button id="download">JSON 기록 저장</button></div><p class="muted small">조작한 위치·방향·물체 이동과 미션 진행을 저장합니다. 기록 재생 후 실제 운전으로 돌아가려면 '로봇 초기화'를 누르세요.</p></div>
 <div class="section"><h2>주행 / 미션 로그</h2><div id="logs" class="log" aria-live="polite"></div></div>
 </div></aside>
@@ -98,17 +95,11 @@ const ARM_LENGTH=3,ARM_TIP=HALF_L+ARM_LENGTH,ARM_MOUTH_HALF=6.5;
 const SENSOR_LATERALS=Array.from({length:7},(_,i)=>(i-3)*2.2);
 const $=id=>document.getElementById(id), canvas=$('field'),ctx=canvas.getContext('2d');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),norm=a=>(a%360+360)%360,rad=a=>a*DEG,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-// Fixtures block the chassis. `container` fixtures accept game objects inside them;
-// `walled` containers (Vet, Groomer) can only receive an object that is lifted over the wall.
-// Official materials list: Vet/Groomer/Litter Box are 'about 20cm x 5cm' structures (read here as
-// length x height; the footprint depth below comes from the previous field drawing and is unverified).
-// The hotel bowl is 17.5cm at the base with a 12cm opening (official materials list).
+// Fixtures block the chassis. The bowl is 17.5cm at the base with a 12cm opening.
+// Food is pushed into the bowl when the arm tip reaches the opening (no timed task).
 const world={fixtures:[{id:'food',label:'사료 디스펜서',x:57,y:4,ox:57,oy:4,shape:'rect',w:12,h:8,color:'#679bbd',penalty:true},
 {id:'hotel',label:'펫호텔',x:131,y:38,ox:131,oy:38,shape:'circle',r:8.75,opening:6,color:'#b5b1b2'},
-{id:'toy',label:'펫토이',x:169.5,y:27.5,ox:169.5,oy:27.5,shape:'rect',w:7,h:21,color:'#8eb5d5',penalty:true},
-{id:'litter',label:'화장실(Litter Box)',x:117.5,y:2,ox:117.5,oy:2,shape:'rect',w:27,h:4,color:'#f3c555',container:true},
-{id:'vet',label:'동물병원(Vet)',x:127,y:73.5,ox:127,oy:73.5,shape:'rect',w:24,h:3,color:'#7cbd82',container:true,walled:true},
-{id:'groomer',label:'미용실(Groomer)',x:53.5,y:73.5,ox:53.5,oy:73.5,shape:'rect',w:27,h:3,color:'#76b66d',container:true,walled:true}],
+{id:'toy',label:'펫토이',x:169.5,y:27.5,ox:169.5,oy:27.5,shape:'rect',w:7,h:21,color:'#8eb5d5',penalty:true}],
 objects:[{id:'dog',label:'강아지',x:12,y:10,ox:12,oy:10,r:2.9,color:'#273d42'},
 {id:'mail1',label:'우편함 1',x:12.5,y:35,ox:12.5,oy:35,r:2.4,color:'#db555b'},
 {id:'mail2',label:'우편함 2',x:12.5,y:52,ox:12.5,oy:52,r:2.4,color:'#db555b'},
@@ -119,12 +110,13 @@ objects:[{id:'dog',label:'강아지',x:12,y:10,ox:12,oy:10,r:2.9,color:'#273d42'
 {id:'litter3',label:'배설물 3',x:123,y:6.5,ox:123,oy:6.5,r:1.5,color:'#e78941'}]};
 // Dog Park is a 10x10cm sheet of paper (official materials list); it is not an obstacle.
 const DOG_PARK={x:11,y:61,w:10,h:10};
-// Lift scaffold: the physical lift is NOT built yet. liftMax=0 means "not installed"; all
-// 2D driving behaviour is unchanged while it is 0. When the user enables an assumed lift,
-// a held object may pass over a walled structure only while the lift is fully raised.
-const lift={height:0,target:0,moving:false};
-const liftSettings=()=>({max:clamp(Number($('liftMax').value)||0,0,30),speed:clamp(Number($('liftSpeed').value)||3,.5,20),wall:Number($('wallHeight').value)||null});
-const liftRaised=()=>{const s=liftSettings();if(s.max<=0)return false;const need=s.wall!==null?Math.min(s.wall,s.max):s.max;return lift.height>=need-1e-6};
+// Litter Box, Vet and Groomer are treated as flat zones (user decision 2026-11-02): the robot
+// can drive over them and an object counts as delivered when its footprint overlaps the zone
+// ("걸쳐서"). Real structures have walls; this is a deliberate simplification for practice.
+const zones=[{id:'litter',label:'화장실(Litter Box)',x:104,y:0,w:27,h:4,color:'#f3c555',edge:'#a8862c'},
+{id:'vet',label:'동물병원(Vet)',x:115,y:72,w:24,h:3,color:'#7cbd82',edge:'#2f6b3a'},
+{id:'groomer',label:'미용실(Groomer)',x:40,y:72,w:27,h:3,color:'#76b66d',edge:'#2f6b3a'}];
+const zoneRect=id=>zones.find(z=>z.id===id);
 const fixtureContacts=new Set();
 // Ten independently tracked 2cm food pieces: dispenser -> moving robot -> hotel.
 const foods=Array.from({length:10},(_,i)=>({id:'food'+(i+1),index:i,where:'dispenser'}));
@@ -189,10 +181,7 @@ function bodyOutsideFraction(x=robot.x,y=robot.y,a=robot.a){
 function fixtureCollision(x=robot.x,y=robot.y,a=robot.a){if(bodyOutsideFraction(x,y,a)>=.5-1e-8)return '낭떠러지: 차체 면적의 50% 이상이 경기장 밖입니다 (추락 위험)';for(const ob of world.fixtures){if(ob.shape==='circle'?circleHitBody(ob,x,y,a):rectHitBody(ob,x,y,a)){if(ob.penalty&&!fixtureContacts.has(ob.id)){fixtureContacts.add(ob.id);say(ob.label+' 차체 접촉: 채점표 기준 설비 이동/손상 감점(-10)으로 기록','bad',true)}return ob.label+' 장애물과 차체 충돌'}}return null}
 function pointInFixture(p,f,r=0){if(f.shape==='circle')return Math.hypot(p.x-f.x,p.y-f.y)<r+f.r;return Math.abs(p.x-f.x)<r+f.w/2&&Math.abs(p.y-f.y)<r+f.h/2}
 function fixtureAt(p){return world.fixtures.find(f=>pointInFixture(p,f))||null}
-// Ground objects cannot overlap a fixture. Open containers (litter box) accept objects pushed in;
-// walled containers only hold an object that was placed inside (ob.inside), by a lifted gripper.
-function objectAllowed(ob,allowEdgeOverhang=false){if(!allowEdgeOverhang&&(ob.x-ob.r<0||ob.x+ob.r>W||ob.y-ob.r<0||ob.y+ob.r>H))return false;return !world.fixtures.some(f=>{if(f.container&&!f.walled)return false;if(f.walled)return ob.inside!==f.id&&pointInFixture(ob,f,ob.r);return pointInFixture(ob,f,ob.r)})}
-function wallBlocksHeld(ob){const f=fixtureAt(ob);if(!f||!f.walled)return null;return liftRaised()?null:f}
+function objectAllowed(ob,allowEdgeOverhang=false){if(!allowEdgeOverhang&&(ob.x-ob.r<0||ob.x+ob.r>W||ob.y-ob.r<0||ob.y+ob.r>H))return false;return !world.fixtures.some(f=>pointInFixture(ob,f,ob.r))}
 function resolvePush(ob){if(!circleHitBody(ob))return true;let p=worldToLocal(ob), dF=HALF_L+ob.r-Math.abs(p.f),dL=HALF_W+ob.r-Math.abs(p.l);if(dF<dL)p.f+=(p.f>=0?1:-1)*(dF+.07);else p.l+=(p.l>=0?1:-1)*(dL+.07);const q=localToWorld(p.f,p.l),prev={x:ob.x,y:ob.y};ob.x=q.x;ob.y=q.y;if(!objectAllowed(ob)){ob.x=prev.x;ob.y=prev.y;return false}return true}
 function resolveArmPush(ob){
   // Front-guide contact: circles touched by an open arm are physically displaced, too.
@@ -219,17 +208,14 @@ function armTarget(){return localToWorld(ARM_TIP,0)}
 let heldProblem='';
 function heldUpdate(){
   heldProblem='';
-  const raised=liftRaised();
   for(const id of robot.held){const ob=world.objects.find(o=>o.id===id),slot=robot.slots[id];if(!ob||!slot)continue;
     const q=localToWorld(slot.f,slot.l),before={x:ob.x,y:ob.y};ob.x=q.x;ob.y=q.y;
-    // A lifted object clears walled structures; everything else must respect fixtures.
-    const blocked=raised?world.fixtures.some(f=>!f.container&&pointInFixture(ob,f,ob.r)):!objectAllowed(ob,true);
-    if(blocked){const wall=world.fixtures.find(f=>f.walled&&pointInFixture(ob,f,ob.r));heldProblem=wall&&!raised?ob.label+'이(가) '+wall.label+' 벽에 막혔습니다 (리프트 필요)':ob.label+'이(가) 설비와 충돌합니다';ob.x=before.x;ob.y=before.y;return false}
+    if(!objectAllowed(ob,true)){heldProblem=ob.label+'이(가) 설비와 충돌합니다';ob.x=before.x;ob.y=before.y;return false}
   }
   return true
 }
 function capturePocket(){
-  if(!robot.gripper||lift.height>0)return;
+  if(!robot.gripper)return;
   const newOnes=[];
   for(const ob of world.objects){
     if(robot.held.includes(ob.id))continue;
@@ -280,16 +266,11 @@ function correct(){if(replay)return;let s=sensorStates(),groups=[s.front,s.back]
 function toggleGrip(){
   if(replay||task||trialResult)return;
   if(robot.gripper){
-    const names=[];
-    for(const id of robot.held){const ob=world.objects.find(o=>o.id===id);if(!ob)continue;
-      const wall=world.fixtures.find(f=>f.walled&&pointInFixture(ob,f));
-      if(wall&&liftRaised()){ob.inside=wall.id;names.push(ob.label+'→'+wall.label+' 내부')}
-      else names.push(ob.label)}
+    const names=robot.held.map(id=>world.objects.find(o=>o.id===id)?.label).filter(Boolean);
     robot.gripper=false;robot.held=[];robot.slots={};achieve();
     say(names.length?names.join(', ')+' '+names.length+'개 내려놓음':'앞 팔 벌림','ok',true);
     return
   }
-  if(lift.height>0){say('리프트가 올라간 상태에서는 바닥의 물체를 집을 수 없습니다. L로 내리세요','warn',true);return}
   robot.gripper=true;capturePocket();
   if(!robot.held.length)say('앞 팔 닫힘 — 포획 영역에 물체가 없습니다. 팔을 닫은 채 접근해도 포획됩니다.','warn',true)
 }
@@ -316,18 +297,17 @@ function achievementName(id){return {dog:'강아지 공원',cat1:'흰 고양이 
 // Zone geometry shared by live achievements and the scorecard model.
 const insideRect=(o,r)=>o.x-o.r>=r.x&&o.x+o.r<=r.x+r.w&&o.y-o.r>=r.y&&o.y+o.r<=r.y+r.h;
 const overlapsRect=(o,r)=>o.x+o.r>r.x&&o.x-o.r<r.x+r.w&&o.y+o.r>r.y&&o.y-o.r<r.y+r.h;
-const fixtureRect=id=>{const f=world.fixtures.find(x=>x.id===id);return {x:f.x-f.w/2,y:f.y-f.h/2,w:f.w,h:f.h}};
 function zoneState(objs,held){
   const find=id=>objs.find(o=>o.id===id);
   const dog=find('dog'),cat1=find('cat1'),cat2=find('cat2');
   const free=id=>!held.includes(id);
-  const inStructure=(o,id)=>!!o&&free(o.id)&&o.inside===id&&pointInFixture(o,world.fixtures.find(f=>f.id===id));
+  const inZone=(o,id)=>!!o&&free(o.id)&&overlapsRect(o,zoneRect(id));
   return {
     dogFull:!!dog&&free('dog')&&insideRect(dog,DOG_PARK),
     dogPartial:!!dog&&free('dog')&&overlapsRect(dog,DOG_PARK),
-    litter:['litter1','litter2','litter3'].filter(id=>{const o=find(id);return o&&pointInFixture(o,world.fixtures.find(f=>f.id==='litter'))}).length,
-    whiteDest:inStructure(cat1,'vet'),
-    orangeDest:inStructure(cat2,'groomer')
+    litter:['litter1','litter2','litter3'].filter(id=>inZone(find(id),'litter')).length,
+    whiteDest:inZone(cat1,'vet'),
+    orangeDest:inZone(cat2,'groomer')
   };
 }
 function achieve(){const z=zoneState(world.objects,robot.held);
@@ -357,8 +337,8 @@ function scoring(data=null){
   ['강아지 이동'+(z.dogFull?' (완전히 공원 안)':z.dogPartial?' (일부 공원 안)':moved('dog')?' (이동만)':''),z.dogFull?10:z.dogPartial?8:moved('dog')?4:0,10],
   ['우편함 보존 ('+mailCount+'/2)',mailCount*2,4],
   ['Pet Toy',flags.toy?10:0,10],
-  ['흰 고양이'+(z.whiteDest?' (Vet 안)':moved('cat1')?' (이동만)':''),z.whiteDest?10:moved('cat1')?5:0,10],
-  ['주황 고양이'+(z.orangeDest?' (Groomer 안)':moved('cat2')?' (이동만)':''),z.orangeDest?10:moved('cat2')?5:0,10],
+  ['흰 고양이'+(z.whiteDest?' (Vet 구역에 걸침)':moved('cat1')?' (이동만)':''),z.whiteDest?10:moved('cat1')?5:0,10],
+  ['주황 고양이'+(z.orangeDest?' (Groomer 구역에 걸침)':moved('cat2')?' (이동만)':''),z.orangeDest?10:moved('cat2')?5:0,10],
   ['UTF 종료 위치 ('+(utfMode==='south'?'남쪽 가장자리 위':'출발선 x=82 위')+' 정지)',stopped&&endZone?8:0,8],
   ['UTF 정답 표시 (연습용 체크박스)',stopped&&displayCorrect?8:0,8],
   ['로봇 온전',11,11],
@@ -391,39 +371,29 @@ function missionNear(f){
  const lateralGap=Math.max(0,Math.abs(delta.l)-lateralExtent-ARM_MOUTH_HALF);
  return nearestFace>=HALF_L-.8&&nearestFace<=ARM_TIP+1.5&&lateralGap<=1.5;
 }
-function beginTask(){if(replay||task||ended||trialResult)return;let allowed=world.fixtures.filter(missionNear).sort((a,b)=>dist(a,armTarget())-dist(b,armTarget()));let f=allowed.find(x=>!x.container)||allowed[0];if(!f){say('팔 전방에 설비가 없습니다. 몸체가 아닌 전방 팔이 설비 쪽을 향하게 접근하세요','warn',true);return}
+function beginTask(){if(replay||task||ended||trialResult)return;let allowed=world.fixtures.filter(missionNear).sort((a,b)=>dist(a,armTarget())-dist(b,armTarget()));let f=allowed[0];if(!f){say('팔 전방에 설비가 없습니다. 몸체가 아닌 전방 팔이 설비 쪽을 향하게 접근하세요','warn',true);return}
 if(achievements[f.id]||(f.id==='hotel'&&achievements.hotel)){say(f.label+' 미션은 이미 수행했습니다','warn');return}
-if(f.container){say(f.label+'은(는) 작동할 설비가 아닙니다. 물체를 밀어 넣거나 집어서 놓으세요','warn',true);return}
-if(f.id==='hotel'&&foodCounts().carried===0){say('먼저 Food Dispenser에서 사료를 수거해서 로봇으로 운반해야 합니다','warn',true);return}
+if(f.id==='hotel'){say('Pet Hotel은 작업이 아니라 밀어넣기입니다. 사료를 실은 채 팔 끝을 그릇 개구부까지 밀어 넣으세요','warn',true);return}
 if(f.id==='food'&&foodCounts().dispenser===0){say('Food Dispenser에 남은 사료가 없습니다','warn',true);return}
-if(f.id==='hotel'){const off=Math.abs(worldToLocal(f).l);if(off>f.opening-1){say('그릇 개구부(지름 '+(f.opening*2)+'cm)와 팔 중심이 '+off.toFixed(1)+'cm 어긋났습니다. 5cm 이내로 정렬하세요','warn',true);return}}
-let seconds=Number($(f.id==='toy'?'timeToy':f.id==='food'?'timeFood':'timeHotel').value);seconds=clamp(isFinite(seconds)?seconds:12,1,60);
-const pieces=f.id==='food'?foodCounts().dispenser:f.id==='hotel'?foodCounts().carried:0;
+let seconds=Number($(f.id==='toy'?'timeToy':'timeFood').value);seconds=clamp(isFinite(seconds)?seconds:12,1,60);
+const pieces=f.id==='food'?foodCounts().dispenser:0;
 task={id:f.id,label:f.label,remaining:seconds,total:seconds,pieces,moved:0};robot.v=0;robot.omega=0;robot.autoAngle=null;running=true;say(f.label+' 작업 시작 · '+seconds+'초 소요'+(pieces?' · 사료 '+pieces+'개 순차 이동':''),'ok',true)}
 function finishTask(){
  if(!task)return;
  const id=task.id,label=task.label;
- if(id==='food'||id==='hotel'){foodTaskProgress();while(task.moved<task.pieces&&transferFoodPiece(id))task.moved++;finishFoodTask(id,task.moved)}
+ if(id==='food'){foodTaskProgress();while(task.moved<task.pieces&&transferFoodPiece(id))task.moved++;finishFoodTask(id,task.moved)}
  else{achievements[id]=true;say(label+' 작업 완료 (장치 동작 가정)','ok',true)}
  task=null;
 }
-function liftUpdate(dt){
- const s=liftSettings();
- if(s.max<=0){lift.height=0;lift.target=0;lift.moving=false;return}
- lift.target=clamp(lift.target,0,s.max);
- if(Math.abs(lift.height-lift.target)<1e-6){lift.moving=false;return}
- lift.moving=true;const step=s.speed*dt;
- lift.height+=clamp(lift.target-lift.height,-step,step);
- if(Math.abs(lift.height-lift.target)<1e-6){lift.height=lift.target;lift.moving=false;say(lift.height>0?'리프트 상승 완료 · '+lift.height.toFixed(1)+'cm (가정 모델)':'리프트 하강 완료','ok',true)}
+function hotelPushCheck(){
+  const fc=foodCounts();if(!fc.carried)return;
+  const h=world.fixtures.find(f=>f.id==='hotel'),tip=localToWorld(ARM_TIP,0);
+  if(Math.hypot(tip.x-h.x,tip.y-h.y)<=h.opening){
+    for(const f of foods)if(f.where==='robot')f.where='hotel';
+    achievements.hotel=true;say('PET HOTEL: 사료 '+fc.carried+'개를 그릇에 밀어 넣음 ('+foodCounts().hotel+'/10)','ok',true)
+  }
 }
-function toggleLift(){
- if(replay||task||ended)return;
- const s=liftSettings();
- if(s.max<=0){say('리프트는 아직 설치되지 않았습니다 (설정의 리프트 최대 높이 0cm). 실험하려면 높이를 입력하세요','warn',true);return}
- lift.target=lift.target>0?0:s.max;running=true;
- say((lift.target>0?'리프트 상승':'리프트 하강')+' 명령 · 목표 '+lift.target.toFixed(1)+'cm','ok',true);
-}
-function eventMove(dt){liftUpdate(dt);if(task){task.remaining-=dt;robot.v=0;robot.omega=0;foodTaskProgress();if(task.remaining<=0)finishTask();return}let requested=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0),maxSpeed=clamp(Number($('speedMax').value)||26,5,45)*(keys.Shift?1.3:1);
+function eventMove(dt){if(task){task.remaining-=dt;robot.v=0;robot.omega=0;foodTaskProgress();if(task.remaining<=0)finishTask();return}let requested=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0),maxSpeed=clamp(Number($('speedMax').value)||26,5,45)*(keys.Shift?1.3:1);
 let targetV=pilot&&pilot.driveSpeed!==null?pilot.driveSpeed:requested*(requested<0?.68*maxSpeed:maxSpeed),accel=Math.abs(targetV)<Math.abs(robot.v)?29:18;robot.v+=clamp(targetV-robot.v,-accel*dt,accel*dt);
 if(Math.abs(robot.v)<.06)robot.v=0;
 let targetOmega=pilot&&pilot.omega!==undefined?pilot.omega:0;
@@ -443,16 +413,16 @@ if(problem){robot.v=0;robot.omega=0;robot.autoAngle=null;
   if(routeIndex>=0){routeMessage='경로 중단 · '+problem+' @('+old.x.toFixed(1)+', '+old.y.toFixed(1)+', '+old.a.toFixed(0)+'°, t='+t.toFixed(1)+'s)';routeIndex=-1;pilot=null;$('demoState').textContent=routeMessage;}if(cooldown<=0){say(problem,'bad',true);cooldown=1.2}return}
 let travel=Math.abs(step),turn=Math.abs(turnDelta);robot.distance+=travel;robot.turn+=turn;robot.uncorrected+=travel;robot.errPos=clamp(robot.errPos+travel*.033+turn*.008,0,30);robot.errAng=clamp(robot.errAng+turn*.034+travel*.006,0,30);
 if(travel>.005||turn>.005){let lastp=trail[trail.length-1];if(!lastp||Math.hypot(robot.x-lastp.x,robot.y-lastp.y)>.12||t-lastp.t>.12){trail.push({x:robot.x,y:robot.y,t});if(trail.length>14000)trail.splice(0,400)}}
-achieve();}
-function snapshot(){return {t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},lift:{...lift},objects:world.objects.map(o=>({id:o.id,x:o.x,y:o.y,ox:o.ox,oy:o.oy,baseDx:o.baseDx||0,baseDy:o.baseDy||0,r:o.r,inside:o.inside||null})),flags:{...achievements},task:task?{...task}:null,food:foods.map(f=>({...f})),contacts:[...fixtureContacts]}}
+hotelPushCheck();achieve();}
+function snapshot(){return {t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({id:o.id,x:o.x,y:o.y,ox:o.ox,oy:o.oy,baseDx:o.baseDx||0,baseDy:o.baseDy||0,r:o.r})),flags:{...achievements},task:task?{...task}:null,food:foods.map(f=>({...f})),contacts:[...fixtureContacts]}}
 function saveFrame(){if(replay)return;if(t-lastRecord<.085)return;record.push(snapshot());lastRecord=t;if(record.length>2000)record.shift()}
-function reset(restore=false){running=false;ended=false;replay=false;trialResult=null;limitFrame=null;routeIndex=-1;routeStarted=false;pilot=null;routeMessage='';$('results').classList.remove('show');$('demoState').textContent='수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.';replayT=0;t=0;Object.assign(robot,{...START,v:0,omega:0,autoAngle:null,gripper:false,held:[],slots:{},distance:0,turn:0,uncorrected:0,errPos:.3,errAng:.4,corrections:0});keys={};pointerObject=null;task=null;trail=[{x:robot.x,y:robot.y,t:0}];record=[];lastRecord=-1;cooldown=0;Object.keys(achievements).forEach(k=>achievements[k]=false);foods.forEach(f=>f.where='dispenser');fixtureContacts.clear();Object.assign(lift,{height:0,target:0,moving:false});world.objects.forEach(o=>{o.inside=null;o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});world.fixtures.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});eventLogs=[];saveFrame();updateSelect();say('새 연습 준비 완료. 방향키 또는 시작을 눌러 주행하세요.','ok',true);draw();updateHUD()}
+function reset(restore=false){running=false;ended=false;replay=false;trialResult=null;limitFrame=null;routeIndex=-1;routeStarted=false;pilot=null;routeMessage='';$('results').classList.remove('show');$('demoState').textContent='수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.';replayT=0;t=0;Object.assign(robot,{...START,v:0,omega:0,autoAngle:null,gripper:false,held:[],slots:{},distance:0,turn:0,uncorrected:0,errPos:.3,errAng:.4,corrections:0});keys={};pointerObject=null;task=null;trail=[{x:robot.x,y:robot.y,t:0}];record=[];lastRecord=-1;cooldown=0;Object.keys(achievements).forEach(k=>achievements[k]=false);foods.forEach(f=>f.where='dispenser');fixtureContacts.clear();world.objects.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});world.fixtures.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});eventLogs=[];saveFrame();updateSelect();say('새 연습 준비 완료. 방향키 또는 시작을 눌러 주행하세요.','ok',true);draw();updateHUD()}
 function resetObjects(){reset(true);say('모든 물체를 기준 위치로 되돌렸습니다','ok',true)}
 function applyDeviation(o,dx,dy){o.baseDx=dx;o.baseDy=dy;o.x=o.ox+dx;o.y=o.oy+dy}
 function randomize(){reset();allObjects().forEach(o=>applyDeviation(o,Math.round((Math.random()*4-2)*10)/10,Math.round((Math.random()*4-2)*10)/10));updateSelect();say('모든 물체/설비에 X·Y 각각 ±2cm 배치 오차 적용','ok',true)}
 function updateSelect(){let o=allObjects().find(o=>o.id===selected)||allObjects()[0];selected=o.id;$('objectSelect').value=selected;for(let k of ['X','Y']){$('shift'+k).value=(o[k.toLowerCase()]===undefined?0:(o['baseD'+k.toLowerCase()]||0));$('shift'+k+'Value').textContent=Number($('shift'+k).value).toFixed(1)}}
 function changeOffset(axis,value){let o=allObjects().find(o=>o.id===selected),v=clamp(Number(value),-2,2);if(!o)return;let dx=axis==='x'?v:o.baseDx||0,dy=axis==='y'?v:o.baseDy||0;reset();o=allObjects().find(o=>o.id===selected);applyDeviation(o,dx,dy);updateSelect();say(o.label+' 기준 좌표 편차 X '+dx.toFixed(1)+' / Y '+dy.toFixed(1)+'cm','ok')}
-function setReplayFrame(frame){t=frame.t;Object.assign(robot,frame.robot);if(frame.lift)Object.assign(lift,frame.lift);for(const s of frame.objects){let o=world.objects.find(o=>o.id===s.id);if(o){o.x=s.x;o.y=s.y;o.inside=s.inside||null}}Object.assign(achievements,frame.flags);task=frame.task?{...frame.task}:null;fixtureContacts.clear();(frame.contacts||[]).forEach(c=>fixtureContacts.add(c));if(frame.food)for(const f of frame.food){const dst=foods.find(x=>x.id===f.id);if(dst)dst.where=f.where}}
+function setReplayFrame(frame){t=frame.t;Object.assign(robot,frame.robot);for(const s of frame.objects){let o=world.objects.find(o=>o.id===s.id);if(o){o.x=s.x;o.y=s.y}}Object.assign(achievements,frame.flags);task=frame.task?{...frame.task}:null;fixtureContacts.clear();(frame.contacts||[]).forEach(c=>fixtureContacts.add(c));if(frame.food)for(const f of frame.food){const dst=foods.find(x=>x.id===f.id);if(dst)dst.where=f.where}}
 function replayStart(){if(record.length<3){say('재생할 운전 기록이 없습니다. 먼저 주행해 주세요','warn');return}replay=true;running=true;ended=false;replayT=0;replayLen=record[record.length-1].t;setReplayFrame(record[0]);say('운전 기록 재생 중 · 키보드 운전 잠금','ok',true)}
 function replayStep(dt){replayT+=dt;if(replayT>=replayLen){setReplayFrame(record[record.length-1]);running=false;ended=true;say('기록 재생 종료','ok');return}let left=0,right=record.length-1;while(left+1<right){let m=(left+right)>>1;if(record[m].t<=replayT)left=m;else right=m}let a=record[left],b=record[right],u=(replayT-a.t)/(b.t-a.t);setReplayFrame(a);robot.x=a.robot.x+(b.robot.x-a.robot.x)*u;robot.y=a.robot.y+(b.robot.y-a.robot.y)*u;robot.a=norm(a.robot.a+(((b.robot.a-a.robot.a+540)%360)-180)*u);t=replayT}
 function saveJSON(){const data={name:'ROBOFEST 2027 manual practice',food:foods.map(f=>({...f})),foodCounts:foodCounts(),dimensions:{field:[182,75],robot:[20,25],weightKg:7},result:trialResult,modelNote:'simplified 2D geometry and estimated encoder error; not a physical or official scoring engine',frames:record};let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='robofest2027_practice_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),300)}
@@ -467,8 +437,8 @@ const demoRoute=[
  {kind:'task',id:'food',label:'사료 수거 10초'},
  {kind:'drive',axis:'y',to:38,label:'그릇 중심 높이(y=38)까지 후진'},
  {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
- {kind:'drive',axis:'x',to:106.5,label:'펫호텔 그릇 개구부 앞 3cm 팔 접근 (중심 정렬)'},
- {kind:'task',id:'hotel',label:'사료 배달 5초'},
+ {kind:'drive',axis:'x',to:109.6,label:'펫호텔 그릇까지 전진 · 팔 끝으로 사료 밀어 넣기'},
+ {kind:'check',flag:'hotel',label:'사료 투입 확인'},
  {kind:'drive',axis:'x',to:85,label:'호텔에서 13cm 후진 · 배설물 회피'},
  {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
  {kind:'drive',axis:'y',to:18.5,label:'호텔 위쪽 통로 진입'},
@@ -494,7 +464,7 @@ const demoRoute=[
 //  aim {target}               turn to face an object or fixture (used where the field drawing is
 //                             not yet verified against the simulator layout; label keeps the plan)
 //  pivot {wheel:'left'|'right',by}  rotate about one stationary wheel (other wheel reverses)
-//  correct                    sensor correction (C)        grip {expect:[ids]} / release / lift {up}
+//  correct                    sensor correction (C)        grip {expect:[ids]} / release
 //  task {id}                  fixture mission (M)          finish
 // The user-proposed route follows the plan from 2026-11-02: start line → dog → park → line trace
 // → cats → groomer → litter box → pet toy → finish. Food Dispenser/Pet Hotel are not in it.
@@ -520,38 +490,33 @@ const userRoute=[
  {kind:'drive',dist:11.1,label:'조금 더 직진 (차체 중심을 선 위로)'},
  {kind:'turn',angle:90,label:'우 90° 회전 (남쪽)'},
  {kind:'drive',trace:true,until:{bank:'front',hit:'경계',min:5},max:40,label:'출발선 라인트레이싱 (중앙 센서를 선 위에 유지) → 남쪽 낭떠러지까지'},
- {kind:'drive',dist:-4.4,label:'후진 4.4cm (현재 배치: 고양이 높이 y≈57에서 회전 공간 확보)'},
  {kind:'turn',angle:0,label:'좌 90° 회전 (동쪽)'},
  {kind:'drive',untilNear:{object:'cat1'},max:50,label:'흰 고양이 포획 거리까지만 전진'},
  {kind:'grip',expect:['cat1'],forbid:['cat2'],label:'흰 고양이만 포획'},
- {kind:'pivot',wheel:'left',by:90,plan:'우 90° 제자리 회전',label:'왼쪽 바퀴 고정 피벗 → 남쪽 (현재 배치: 제자리 회전은 고양이가 Vet 벽에 걸림)'},
- {kind:'lift',up:true,optional:true,label:'리프트 상승 (설정 시)'},
- {kind:'drive',axis:'y',to:54.5,tolerant:true,label:'남쪽으로 전진 (고양이를 테이블 남쪽 끝 y≈71 · 복귀 통로 밖에 둠)'},
- {kind:'release',label:'흰 고양이 놓기 (현재 배치: Vet 서쪽 테이블 위 → 이동 점수만)'},
- {kind:'lift',up:false,optional:true,label:'리프트 하강'},
- {kind:'drive',axis:'y',to:40,reverse:true,label:'북쪽으로 후진 (회전 반경이 흰 고양이에 닿지 않게)'},
- {kind:'turn',angle:0,label:'좌 90° 회전 (동쪽)'},
- {kind:'drive',axis:'x',to:100.5,label:'동쪽으로 3cm'},
- {kind:'pivot',wheel:'right',by:90,label:'오른쪽 바퀴 고정 피벗 → 남쪽 (호텔에서 멀어지며 회전)'},
- {kind:'drive',axis:'y',to:48.25,label:'남쪽으로 전진 · 흰 고양이 옆 통과'},
- {kind:'pivot',wheel:'left',by:-90,label:'왼쪽 바퀴 고정 피벗 → 동쪽 (y=57 · 주황 고양이 정면, Vet 모서리 회피)'},
+ {kind:'turn',angle:45,label:'우 45° 회전 → 흰 고양이를 Vet 구역에 걸침'},
+ {kind:'release',label:'흰 고양이 놓기 (Vet 구역)'},
+ {kind:'drive',dist:-5.8,label:'대각선 후진 5.8cm (복귀 통로를 흰 고양이에서 띄움)'},
+ {kind:'turn',angle:0,label:'좌 45° 회전 (동쪽 · 주황 고양이 정면)'},
  {kind:'drive',untilNear:{object:'cat2'},max:40,label:'주황 고양이 포획 거리까지 전진'},
  {kind:'grip',expect:['cat2'],label:'주황 고양이 포획'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선 감지까지 후진'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:1},max:50,label:'그루머 앞 검은선 감지까지 후진'},
  {kind:'drive',dist:-10,label:'후진 10cm (피벗 후 고양이가 Groomer 폭 안에 오도록)'},
  {kind:'pivot',wheel:'left',by:90,label:'왼쪽 바퀴 고정 · 오른쪽 바퀴 후진 피벗 → 남쪽 (Groomer 바라보기)'},
- {kind:'lift',up:true,optional:true,label:'리프트 상승 (설정 시)'},
- {kind:'drive',axis:'y',to:58,tolerant:true,label:'Groomer 앞까지 전진 (고양이가 구조물 안 y≈73.5에 오는 위치)'},
- {kind:'release',label:'주황 고양이 놓기 (리프트 없으면 벽 앞)'},
- {kind:'lift',up:false,optional:true,label:'리프트 하강'},
+ {kind:'drive',axis:'y',to:58,tolerant:true,label:'Groomer 구역까지 전진 (고양이가 구역에 걸치는 위치)'},
+ {kind:'release',label:'주황 고양이 놓기 (Groomer 구역)'},
  {kind:'drive',axis:'y',to:37.5,reverse:true,label:'후진하여 중점(y≈37.5)으로'},
  {kind:'turn',by:-180,label:'좌 180° 회전 (디스펜서 방향)'},
  {kind:'drive',axis:'y',to:24,label:'디스펜서 앞 y=24까지 전진 (검은선 x=54 옆 · 회전 반경 16cm 확보)'},
  {kind:'turn',angle:0,plan:'살짝 우회전하여 Litter Box 바라보기',label:'동쪽으로 회전 (현재 배치: 호텔·화장실 사이 통로 y=24)'},
  {kind:'drive',axis:'x',to:110.5,label:'화장실 앞 대기점(110.5,24)까지 동진'},
- {kind:'turn',angle:270,label:'북쪽으로 회전 (배터리 1·2는 차체 앞 · 3은 현재 배치에서 호텔 때문에 닿지 않음)'},
- {kind:'drive',dist:30,tolerant:true,label:'Litter Box 벽에 막힐 때까지 전진 · 배터리 밀어 넣기'},
+ {kind:'turn',angle:270,label:'북쪽으로 회전 (배터리 1·2는 차체 앞)'},
+ {kind:'drive',dist:30,tolerant:true,label:'Litter Box 구역으로 배터리 1·2 밀어 넣기'},
+ {kind:'drive',axis:'y',to:22,reverse:true,label:'후진 (두 번째 밀기 준비)'},
+ {kind:'turn',angle:315,label:'우 45° 회전 (북동 · 세 번째 배터리 방향)'},
+ {kind:'drive',dist:11,tolerant:true,label:'세 번째 배터리를 Litter Box 구역으로 밀기'},
+ {kind:'drive',dist:-11,label:'후진'},
+ {kind:'turn',angle:270,label:'북쪽으로 복귀'},
  {kind:'drive',axis:'y',to:24,reverse:true,label:'후진하여 회전 공간 확보'},
  {kind:'turn',angle:0,plan:'우 70° 회전',label:'동쪽으로 회전 (현재 배치: 출발선이 정서쪽이라 90°)'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선 감지까지 후진'},
@@ -568,8 +533,8 @@ const userRoute=[
  {kind:'drive',dist:-8,label:'후진 조금 더 · 종료 위치'},
  {kind:'finish',label:'경기 종료 및 점수 계산'}
 ];
-const routes={basic:{label:'기본 검증 경로',steps:demoRoute,note:'시작 → Food Dispenser 사료 10개 적재 → Pet Hotel 투입 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용하는 검증용 예제입니다.'},
- user:{label:'사용자 제안 경로 (센서 기반)',steps:userRoute,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet) → 주황 고양이(Groomer, 피벗 회전) → Litter Box → Pet Toy → 출발선 복귀. 리프트 미설정 시 고양이는 벽 앞에 내려놓습니다(이동 점수만).'}};
+const routes={basic:{label:'기본 검증 경로',steps:demoRoute,note:'시작 → Food Dispenser 사료 10개 적재 → Pet Hotel 그릇에 밀어 넣기 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용하는 검증용 예제입니다.'},
+ user:{label:'사용자 제안 경로 (센서 기반)',steps:userRoute,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet) → 주황 고양이(Groomer, 피벗 회전) → Litter Box → Pet Toy → 출발선 복귀. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.'}};
 let activeRoute=demoRoute,stepStart=null;
 function routeTarget(id){if(id&&typeof id==='object')return {r:0,label:'지점',...id};return world.objects.find(o=>o.id===id)||world.fixtures.find(f=>f.id===id)||(id==='dogpark'?{x:DOG_PARK.x+DOG_PARK.w/2,y:DOG_PARK.y+DOG_PARK.h/2,r:0,label:'Dog Park'}:null)}
 function startDemo(name){
@@ -651,12 +616,10 @@ function demoUpdate(dt){
     pilot={driveSpeed:0};
     if(robot.gripper)toggleGrip();
     next();
-  }else if(c.kind==='lift'){
+  }else if(c.kind==='check'){
     pilot={driveSpeed:0};
-    const s=liftSettings();
-    if(s.max<=0){if(c.optional){next();return}abortRoute('리프트가 설치되지 않았습니다');return}
-    if(!routeStarted){routeStarted=true;lift.target=c.up?s.max:0}
-    if(!lift.moving&&Math.abs(lift.height-lift.target)<1e-6)next();
+    if(!achievements[c.flag]){abortRoute(c.label+' 실패');return}
+    next();
   }else if(c.kind==='finish'){
     pilot={driveSpeed:0};
     if(Math.abs(robot.v)<.4){routeIndex=-1;finishGame()}
@@ -670,21 +633,20 @@ function saveResult(){
   a.href=u;a.download='robofest2027_trial_score.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)
 }
 // Exposed solely for deterministic browser-based regression tests and reproducible route validation.
-window.__rfTest={advance:(dt)=>advance(dt),startDemo,routes:Object.keys(routes),routeSteps:name=>routes[name].steps.map(s=>s.label),finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),armLength:ARM_LENGTH,food:foods.map(f=>({...f})),foodCounts:foodCounts(),sensors:sensorStates(),result:trialResult,routeIndex,routeMessage,routeStep:routeIndex>=0&&activeRoute[routeIndex]?activeRoute[routeIndex].label||activeRoute[routeIndex].kind:null,lift:{...lift},contacts:[...fixtureContacts],task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction,missionNear,lift:toggleLift,applyDeviations:d=>{for(const [id,[dx,dy]] of Object.entries(d)){const o=allObjects().find(o=>o.id===id);if(o)applyDeviation(o,clamp(dx,-2,2),clamp(dy,-2,2))}},getRoute:name=>JSON.parse(JSON.stringify(routes[name].steps)),placeObject:(id,x,y)=>{const o=world.objects.find(o=>o.id===id);if(!o)return false;o.x=x;o.y=y;return true},runSteps:steps=>{activeRoute=steps;activeRoute.forEach(st=>{delete st._armed;delete st._target});routeIndex=0;routeStarted=false;running=true;ended=false;routeMessage='custom';return true},forcePose:(x,y,a)=>{const f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});trail=[{x,y,t}];return true}};
+window.__rfTest={advance:(dt)=>advance(dt),startDemo,routes:Object.keys(routes),routeSteps:name=>routes[name].steps.map(s=>s.label),finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),armLength:ARM_LENGTH,food:foods.map(f=>({...f})),foodCounts:foodCounts(),sensors:sensorStates(),result:trialResult,routeIndex,routeMessage,routeStep:routeIndex>=0&&activeRoute[routeIndex]?activeRoute[routeIndex].label||activeRoute[routeIndex].kind:null,contacts:[...fixtureContacts],task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction,missionNear,applyDeviations:d=>{for(const [id,[dx,dy]] of Object.entries(d)){const o=allObjects().find(o=>o.id===id);if(o)applyDeviation(o,clamp(dx,-2,2),clamp(dy,-2,2))}},getRoute:name=>JSON.parse(JSON.stringify(routes[name].steps)),placeObject:(id,x,y)=>{const o=world.objects.find(o=>o.id===id);if(!o)return false;o.x=x;o.y=y;return true},runSteps:steps=>{activeRoute=steps;activeRoute.forEach(st=>{delete st._armed;delete st._target});routeIndex=0;routeStarted=false;running=true;ended=false;routeMessage='custom';return true},forcePose:(x,y,a)=>{const f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});trail=[{x,y,t}];return true}};
 function draw(){let viewport=canvas.getBoundingClientRect(),pix=window.devicePixelRatio||1,cw=Math.max(1,Math.round(viewport.width*pix)),ch=Math.max(1,Math.round(viewport.height*pix));if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(cw/FW,0,0,ch/FH,OX*cw/FW,OY*ch/FH);ctx.clearRect(-OX,-OY,FW,FH);ctx.fillStyle='#e9f1f3';ctx.fillRect(-OX,-OY,FW,FH);
 function rect(x,y,w,h,fill,stroke,sw=.5){ctx.beginPath();ctx.rect(x,y,w,h);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
 function circle(x,y,r,fill,stroke,sw=.5){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
 function label(str,x,y,size=3.1,color='#2f4d56',align='left'){ctx.save();ctx.font=`600 ${size}px system-ui,-apple-system,sans-serif`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.strokeStyle='rgba(240,246,247,.94)';ctx.lineWidth=.85;ctx.lineJoin='round';ctx.strokeText(str,x,y);ctx.fillStyle=color;ctx.fillText(str,x,y);ctx.restore()}
 ctx.save();ctx.beginPath();ctx.roundRect(0,0,W,H,4.5);ctx.clip();rect(0,0,W,H,'#f5f8f9');
 // Markers: fixed zones, visually below the trail.
-rect(DOG_PARK.x,DOG_PARK.y,DOG_PARK.w,DOG_PARK.h,'#58d46c','#328b45',.6);
+rect(DOG_PARK.x,DOG_PARK.y,DOG_PARK.w,DOG_PARK.h,'#58d46c','#328b45',.6);for(const z of zones)rect(z.x,z.y,z.w,z.h,z.color,z.edge,.6);
 // Driving footprint, full 20cm width; recent segments are more opaque.
 if($('showTrail').checked&&trail.length>1){ctx.save();ctx.lineWidth=20;ctx.lineCap='round';ctx.lineJoin='round';for(let i=1;i<trail.length;i++){let age=t-trail[i].t;if(age<0||age>34)continue;let f=1-age/34,alpha=.035+.53*f*f;ctx.strokeStyle=`rgba(0,115,61,${alpha})`;ctx.beginPath();ctx.moveTo(trail[i-1].x,trail[i-1].y);ctx.lineTo(trail[i].x,trail[i].y);ctx.stroke()}ctx.restore()}
 // Black lines.
 ctx.save();ctx.strokeStyle='#15202a';ctx.lineWidth=1.2;ctx.lineCap='butt';for(let line of lines){ctx.beginPath();ctx.moveTo(line[0],line[1]);ctx.lineTo(line[2],line[3]);ctx.stroke()}ctx.restore();
 // Field fixtures drawn over trail.
 for(const f of world.fixtures){if(f.shape==='circle'){circle(f.x,f.y,f.r,f.color,'#67737c',.65);circle(f.x,f.y,f.opening,'#9c9697','#67737c',.4);label('PET HOTEL',f.x,f.y,3.2,'#29454a','center')}
- else if(f.container){rect(f.x-f.w/2,f.y-f.h/2,f.w,f.h,f.color,f.walled?'#2f6b3a':'#a8862c',f.walled?1.1:.6)}
  else{rect(f.x-f.w/2,f.y-f.h/2,f.w,f.h,f.color,'#5e8298',.6);label(f.id==='food'?'FOOD DISPENSER':'PET TOY',f.id==='food'?f.x:f.x-1,f.id==='food'?f.y+10:f.y-14,3.2,'#344955','center')}}
 // Render 10 food pieces inside the dispenser or the hotel bowl.
 for(const f of foods){
@@ -717,7 +679,6 @@ for(const f of foods){
 // forward direction triangle
 ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(4,-3.5);ctx.lineTo(4,3.5);ctx.closePath();ctx.fillStyle='#d7fff6';ctx.fill();
 ctx.font='600 3.5px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#efffff';ctx.fillText('7kg',-2,0);if(robot.held.length){ctx.font='600 2.6px system-ui';ctx.fillText('×'+robot.held.length,16,-13)}
-if(lift.height>0){ctx.font='600 2.6px system-ui';ctx.fillStyle='#ffe08a';ctx.fillText('↑'+lift.height.toFixed(1),16,13)}
 ctx.strokeStyle='#eab44c';ctx.lineWidth=1.9;ctx.lineCap='round';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(HALF_L-.35,side*7.1);ctx.lineTo(ARM_TIP-(robot.gripper?.65:0),side*(robot.gripper?6.0:8.0));if(robot.gripper)ctx.lineTo(ARM_TIP,side*4.5);ctx.stroke()}
 // Front and rear line-tracking sensor arrays, 7 channels each.
 const sense=sensorStates();
@@ -746,7 +707,6 @@ $('sensorBackDots').style.color=counts[1]>=5?'#55d6a0':counts[1]?'#f2c66a':'#abc
 const fc=foodCounts();$('foodStatus').textContent=fc.dispenser+' / '+fc.carried+' / '+fc.hotel;
 $('missionState').textContent=task?task.label+' · '+Math.ceil(task.remaining)+'초':fc.carried?'사료 '+fc.carried+'개 운반 중':'대기';
 $('liveScore').textContent=scoring().total+' / 100';
-const ls=liftSettings();$('liftState').textContent=ls.max<=0?'미설치 (0cm)':(lift.moving?'이동 중 ':liftRaised()?'상승 완료 ':lift.height>0?'중간 ':'바닥 ')+lift.height.toFixed(1)+' / '+ls.max.toFixed(1)+'cm (가정)';
 let risk=(robot.errPos>=3||robot.errAng>=4);$('driftNote').textContent=risk?'보정 부족 경고: 긴 직진 또는 회전으로 엔코더 오차 추정치가 커졌습니다. 가까운 검은선/경계에서 C로 재보정하세요.':'보정 이후 오차 추정치가 허용 참고값 내입니다. 오차는 시각적 추정일 뿐 실제 로봇을 움직이지 않습니다.';$('driftNote').style.color=risk?'#ffd08b':'#bde4d8';
 if(performance.now()>noticeUntil){if(task){$('status').textContent=task.label+' 작동 중 · 남은 '+Math.ceil(task.remaining)+'초 (주행 잠금)';$('status').className=''}else if(risk){$('status').textContent='보정 권장: 위치 ±'+robot.errPos.toFixed(1)+'cm / 방향 ±'+robot.errAng.toFixed(1)+'°. 검은선 감지 시 C 사용';$('status').className='warn'}else if(counts[0]>=5||counts[1]>=5){$('status').textContent='앞/뒤 라인센서에 검은선 또는 경계가 감지됐습니다. C 보정 가능';$('status').className=''}else{$('status').textContent='수동 주행: ↑↓ 전후진 / ←→ 회전 / G 잡기 / M 미션 / C 보정';$('status').className=''}}
 }
@@ -773,19 +733,19 @@ function frame(now){
 const moveKeys=new Set(['ArrowUp','ArrowDown','Shift']);
 window.addEventListener('keydown',e=>{
   const tag=e.target?.tagName;if(['INPUT','SELECT','TEXTAREA'].includes(tag))return;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyG','KeyM','KeyC','KeyQ','KeyE','KeyP','KeyL','Shift'].includes(e.code))e.preventDefault();
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyG','KeyM','KeyC','KeyQ','KeyE','KeyP','Shift'].includes(e.code))e.preventDefault();
   if(moveKeys.has(e.key))moveKeyboard(e.key,true);
   if(e.repeat)return;
   if(e.code==='ArrowLeft')targetTurn(-15);
   if(e.code==='ArrowRight')targetTurn(15);
-  if(e.code==='KeyG')toggleGrip();if(e.code==='KeyM')beginTask();if(e.code==='KeyC')correct();if(e.code==='KeyL')toggleLift();
+  if(e.code==='KeyG')toggleGrip();if(e.code==='KeyM')beginTask();if(e.code==='KeyC')correct();
   if(e.code==='KeyQ')targetTurn(-90);if(e.code==='KeyE')targetTurn(90);
   if(e.code==='Space')brake();if(e.code==='KeyP'){running=!running&&!ended;pilot=null;routeIndex=-1}
 });
 window.addEventListener('keyup',e=>{if(moveKeys.has(e.key))moveKeyboard(e.key,false)});
 window.addEventListener('blur',()=>{keys={};robot.v=0;robot.omega=0});
 for(const b of document.querySelectorAll('[data-key]')){const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);b.classList.add('held');moveKeyboard(k,true)});const off=e=>{e.preventDefault();b.classList.remove('held');moveKeyboard(k,false)};b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('lostpointercapture',()=>{b.classList.remove('held');moveKeyboard(k,false)})}
-$('start').onclick=()=>{if(ended)return;say('연습 재개','ok');running=true};$('pause').onclick=()=>{running=false;keys={};pilot=null;routeIndex=-1;robot.v=0;robot.omega=0};$('restart').onclick=()=>reset();$('finish').onclick=finishGame;$('demo').onclick=()=>startDemo();$('routeSelect').onchange=e=>{$('routeNote').textContent=routes[e.target.value].note};$('closeResults').onclick=()=>$('results').classList.remove('show');$('newTrial').onclick=()=>reset();$('exportResults').onclick=saveResult;$('turnLeftTouch').onclick=()=>targetTurn(-15);$('turnRightTouch').onclick=()=>targetTurn(15);$('restoreObjects').onclick=resetObjects;$('random').onclick=randomize;$('grabTouch').onclick=toggleGrip;$('missionTouch').onclick=beginTask;$('liftTouch').onclick=toggleLift;$('correctTouch').onclick=correct;$('brakeTouch').onclick=brake;$('left90').onclick=()=>targetTurn(-90);$('right90').onclick=()=>targetTurn(90);$('replay').onclick=replayStart;$('download').onclick=saveJSON;
+$('start').onclick=()=>{if(ended)return;say('연습 재개','ok');running=true};$('pause').onclick=()=>{running=false;keys={};pilot=null;routeIndex=-1;robot.v=0;robot.omega=0};$('restart').onclick=()=>reset();$('finish').onclick=finishGame;$('demo').onclick=()=>startDemo();$('routeSelect').onchange=e=>{$('routeNote').textContent=routes[e.target.value].note};$('closeResults').onclick=()=>$('results').classList.remove('show');$('newTrial').onclick=()=>reset();$('exportResults').onclick=saveResult;$('turnLeftTouch').onclick=()=>targetTurn(-15);$('turnRightTouch').onclick=()=>targetTurn(15);$('restoreObjects').onclick=resetObjects;$('random').onclick=randomize;$('grabTouch').onclick=toggleGrip;$('missionTouch').onclick=beginTask;$('correctTouch').onclick=correct;$('brakeTouch').onclick=brake;$('left90').onclick=()=>targetTurn(-90);$('right90').onclick=()=>targetTurn(90);$('replay').onclick=replayStart;$('download').onclick=saveJSON;
 for(const o of allObjects()){const option=document.createElement('option');option.value=o.id;option.textContent=o.label;$('objectSelect').appendChild(option)}$('objectSelect').onchange=e=>{selected=e.target.value;updateSelect()};$('shiftX').oninput=e=>changeOffset('x',e.target.value);$('shiftY').oninput=e=>changeOffset('y',e.target.value);
 // Drag world objects within the allowed ±2 cm placement tolerance. Only while paused / not yet running.
 function pointerWorld(e){let r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*FW-OX,y:(e.clientY-r.top)/r.height*FH-OY}}

@@ -15,8 +15,8 @@ HTML = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="
 
 ap = argparse.ArgumentParser()
 ap.add_argument("route", nargs="?", default="basic")
-ap.add_argument("--lift", type=float, default=0, help="assumed lift max height (0 = not installed)")
-ap.add_argument("--wall", type=float, default=None, help="assumed Vet/Groomer wall height")
+
+
 ap.add_argument("--seed-random", type=int, default=None, help="apply ±2cm random placement with this seed")
 ap.add_argument("--start", nargs=3, type=float, default=None, metavar=("X", "Y", "A"))
 ap.add_argument("--max-seconds", type=float, default=240)
@@ -30,10 +30,6 @@ with sync_playwright() as pw:
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.set_content(HTML, wait_until="load")
     page.evaluate("window.__rfTest.reset()")
-    if args.lift:
-        page.fill("#liftMax", str(args.lift))
-    if args.wall is not None:
-        page.fill("#wallHeight", str(args.wall))
     page.evaluate("name => window.__rfTest.startDemo(name)", args.route)
     if args.seed_random is not None:
         rnd = random.Random(args.seed_random)
