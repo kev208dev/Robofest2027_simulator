@@ -188,8 +188,8 @@ with sync_playwright() as playwright:
 
     # User-proposed sensor-based route (start line -> dog -> park -> line trace -> cats ->
     # groomer pivot -> litter box -> pet toy -> finish) must complete within 120s on the
-    # default layout. Both cats overlap their zones, 3/3 litter, dog fully in the park:
-    # 80 points (77 on layouts where the third battery is missed).
+    # default layout: dog, cats (zones), food via line-traced dispenser + hotel push,
+    # 3/3 litter in one push, Pet Toy, finish on the start line -> 100 points.
     page.evaluate("window.__rfTest.startDemo('user')")
     result = page.evaluate("""() => {
         for (let i = 0; i < 2600; i++) {
@@ -201,7 +201,8 @@ with sync_playwright() as playwright:
     }""")
     assert result["result"], result["routeMessage"]
     assert result["t"] < 120, result["t"]
-    assert result["score"]["total"] >= 77, result["score"]
+    assert result["score"]["total"] == 100, result["score"]
+    assert result["foodCounts"] == {"dispenser": 0, "carried": 0, "hotel": 10}, result["foodCounts"]
     parts = {p[0].split(" (")[0]: p[1] for p in result["score"]["parts"]}
     assert parts["강아지 이동"] == 10 and parts["Pet Toy"] == 10, parts
     assert parts["흰 고양이"] == 10 and parts["주황 고양이"] == 10, parts

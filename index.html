@@ -501,25 +501,24 @@ const userRoute=[
  {kind:'grip',expect:['cat2'],label:'주황 고양이 포획'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선 감지까지 후진'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:1},max:50,label:'그루머 앞 검은선 감지까지 후진'},
- {kind:'drive',dist:-10,label:'후진 10cm (피벗 후 고양이가 Groomer 폭 안에 오도록)'},
+ {kind:'drive',dist:-2.75,label:'후진 2.75cm (피벗 후 차체가 디스펜서/그루머 중점 x≈55에 오도록)'},
  {kind:'pivot',wheel:'left',by:90,label:'왼쪽 바퀴 고정 · 오른쪽 바퀴 후진 피벗 → 남쪽 (Groomer 바라보기)'},
  {kind:'drive',axis:'y',to:58,tolerant:true,label:'Groomer 구역까지 전진 (고양이가 구역에 걸치는 위치)'},
  {kind:'release',label:'주황 고양이 놓기 (Groomer 구역)'},
- {kind:'drive',axis:'y',to:37.5,reverse:true,label:'후진하여 중점(y≈37.5)으로'},
- {kind:'turn',by:-180,label:'좌 180° 회전 (디스펜서 방향)'},
- {kind:'drive',axis:'y',to:24,label:'디스펜서 앞 y=24까지 전진 (검은선 x=54 옆 · 회전 반경 16cm 확보)'},
- {kind:'turn',angle:0,plan:'살짝 우회전하여 Litter Box 바라보기',label:'동쪽으로 회전 (현재 배치: 호텔·화장실 사이 통로 y=24)'},
- {kind:'drive',axis:'x',to:110.5,label:'화장실 앞 대기점(110.5,24)까지 동진'},
- {kind:'turn',angle:270,label:'북쪽으로 회전 (배터리 1·2는 차체 앞)'},
- {kind:'drive',dist:30,tolerant:true,label:'Litter Box 구역으로 배터리 1·2 밀어 넣기'},
- {kind:'drive',axis:'y',to:22,reverse:true,label:'후진 (두 번째 밀기 준비)'},
- {kind:'turn',angle:315,label:'우 45° 회전 (북동 · 세 번째 배터리 방향)'},
- {kind:'drive',dist:11,tolerant:true,label:'세 번째 배터리를 Litter Box 구역으로 밀기'},
- {kind:'drive',dist:-11,label:'후진'},
- {kind:'turn',angle:270,label:'북쪽으로 복귀'},
- {kind:'drive',axis:'y',to:24,reverse:true,label:'후진하여 회전 공간 확보'},
- {kind:'turn',angle:0,plan:'우 70° 회전',label:'동쪽으로 회전 (현재 배치: 출발선이 정서쪽이라 90°)'},
- {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선 감지까지 후진'},
+ {kind:'drive',axis:'y',to:37.5,reverse:true,label:'뒤로 빠져 디스펜서/그루머 중점(y≈37.5)까지 후진'},
+ {kind:'turn',by:-180,label:'180° 회전 (디스펜서 방향 · 북쪽)'},
+ {kind:'drive',until:{bank:'front',hit:'검은선',min:1},max:30,label:'디스펜서 앞 검은선(x=54) 감지까지 전진'},
+ {kind:'drive',trace:true,untilMission:'food',max:30,label:'라인트레이싱으로 Food Dispenser까지'},
+ {kind:'task',id:'food',label:'사료 10개 받기'},
+ {kind:'drive',axis:'y',to:37.5,reverse:true,label:'중점(y≈37.5)까지 후진'},
+ {kind:'turn',angle:0,label:'우 90° 회전 (동쪽 · Pet Hotel 방향)'},
+ {kind:'drive',untilFlag:'hotel',max:70,label:'Pet Hotel까지 직진 · 사료 밀어 넣기'},
+ {kind:'drive',dist:-4,label:'조금 후진'},
+ {kind:'turn',angle:285,label:'좌로 살짝 회전 (Litter Box 방향 · 285°)'},
+ {kind:'drive',dist:45,tolerant:true,label:'Litter Box로 전진 · 배터리 3개 한 번에 밀기'},
+ {kind:'drive',dist:-10,label:'뒤로 살짝 빠지기'},
+ {kind:'turn',angle:0,label:'우회전 (동쪽 · 출발선을 등지고 정렬)'},
+ {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선까지 이동 (현재 배치: 출발선이 뒤쪽 → 후진)'},
  {kind:'correct',label:'출발선 보정'},
  {kind:'drive',dist:-8,label:'후진 8cm (밀려난 배터리와 팔 간섭 회피)'},
  {kind:'turn',angle:270,label:'북쪽으로 회전 (현재 배치: 펫호텔 위 통로 y≤18.7 맞추기)'},
@@ -534,7 +533,7 @@ const userRoute=[
  {kind:'finish',label:'경기 종료 및 점수 계산'}
 ];
 const routes={basic:{label:'기본 검증 경로',steps:demoRoute,note:'시작 → Food Dispenser 사료 10개 적재 → Pet Hotel 그릇에 밀어 넣기 → Pet Toy → 종료. 수평·수직 이동 및 90° 회전만 사용하는 검증용 예제입니다.'},
- user:{label:'사용자 제안 경로 (센서 기반)',steps:userRoute,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet) → 주황 고양이(Groomer, 피벗 회전) → Litter Box → Pet Toy → 출발선 복귀. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.'}};
+ user:{label:'사용자 제안 경로 (센서 기반)',steps:userRoute,note:'출발선 감지·보정 → 강아지 → Dog Park → 출발선 라인트레이싱 → 흰 고양이(Vet 구역) → 주황 고양이(Groomer 구역, 피벗) → 중점 → 라인트레이싱으로 Food Dispenser(사료 10개) → Pet Hotel 밀어넣기 → Litter Box 배터리 3개 한 번에 → 출발선 보정 → Pet Toy → 종료. Vet·Groomer·Litter Box는 구역으로 가정해 걸치기만 해도 인정합니다.'}};
 let activeRoute=demoRoute,stepStart=null;
 function routeTarget(id){if(id&&typeof id==='object')return {r:0,label:'지점',...id};return world.objects.find(o=>o.id===id)||world.fixtures.find(f=>f.id===id)||(id==='dogpark'?{x:DOG_PARK.x+DOG_PARK.w/2,y:DOG_PARK.y+DOG_PARK.h/2,r:0,label:'Dog Park'}:null)}
 function startDemo(name){
@@ -582,7 +581,7 @@ function demoUpdate(dt){
       // Line tracing: weighted centre of the front sensors that see tape -> steering error.
       // Positive lateral = right of the robot. The centre sensor (index 3) on the tape = 0 error.
       const bank=sensorStates().front,on=bank.map((p,i)=>p.hit==='검은선'?SENSOR_LATERALS[i]:null).filter(v=>v!==null);
-      const stop=c.until?sensorCount(c.until.bank,c.until.hit)>=(c.until.min||5):false;
+      const stop=c.untilMission?missionNear(world.fixtures.find(f=>f.id===c.untilMission)):c.until?sensorCount(c.until.bank,c.until.hit)>=(c.until.min||5):false;
       if(!on.length&&!stop){c._lost=(c._lost||0)+Math.abs(robot.v)*dt;if(c._lost>4){abortRoute(c.label+' · 선을 놓침 (4cm 이상 미감지)');return}}else c._lost=0;
       const err=on.length?on.reduce((a,b)=>a+b,0)/on.length:0;
       c._maxErr=Math.max(c._maxErr||0,Math.abs(err));
@@ -592,6 +591,7 @@ function demoUpdate(dt){
       return;
     }
     else if(c.until){const n=sensorCount(c.until.bank,c.until.hit);if(c._armed===undefined)c._armed=n===0;if(!c._armed&&n===0)c._armed=true;done=c._armed&&n>=(c.until.min||5);speed=done?0:sign*(c.speed||14)}
+    else if(c.untilFlag){done=!!achievements[c.untilFlag];speed=done?0:sign*(c.speed||16)}
     else if(c.untilMission){const f=world.fixtures.find(x=>x.id===c.untilMission);done=missionNear(f);const p=worldToLocal(f);speed=done?0:profile(Math.max(p.f-HALF_L,0.5))*sign}
     else if(c.untilNear){const o=routeTarget(c.untilNear.object);if(!o){abortRoute('대상 없음');return}const p=worldToLocal(o),want=c.untilNear.f!==undefined?c.untilNear.f:HALF_L+(o.r||0)+.6;done=p.f<=want&&Math.abs(p.l)<=ARM_MOUTH_HALF+1.5;const gap=p.f-want;speed=done?0:profile(Math.max(gap,0.5))*sign;if(!done&&Math.abs(p.l)>ARM_MOUTH_HALF+3&&p.f<want+6){abortRoute(c.label+' · '+(o.label||c.untilNear.object)+' 측방 어긋남 '+p.l.toFixed(1)+'cm');return}}
     pilot={driveSpeed:speed,tolerant:!!c.tolerant};
