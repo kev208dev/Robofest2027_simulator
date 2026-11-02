@@ -133,10 +133,10 @@ with sync_playwright() as playwright:
     page.evaluate("window.__rfTest.reset()")
     assert page.evaluate("window.__rfTest.setPose(57,24,270)") is True
     page.keyboard.press("KeyM")
-    page.evaluate("window.__rfTest.advance(6)")
+    page.evaluate("window.__rfTest.advance(5)")
     counts = page.evaluate("window.__rfTest.getState().foodCounts")
-    assert counts["carried"] == 5 and counts["dispenser"] == 5, counts  # half-way through 12s
-    page.evaluate("window.__rfTest.advance(7)")
+    assert counts["carried"] == 5 and counts["dispenser"] == 5, counts  # half-way through 10s
+    page.evaluate("window.__rfTest.advance(6)")
     assert page.evaluate("window.__rfTest.getState().foodCounts")["carried"] == 10
     assert page.evaluate("window.__rfTest.forcePose(106.5,24,0)") is True  # beside the bowl, 14cm off
     page.keyboard.press("KeyM")
@@ -172,6 +172,18 @@ with sync_playwright() as playwright:
     assert page.evaluate("window.__rfTest.getState().contacts") == ["food"]
     assert page.evaluate("window.__rfTest.getState().score.parts[11][1]") == -10
     print("Fixture contact penalty: OK")
+
+    # Line tracing keeps the centre front sensor on the 1.9cm tape (half-width 0.95cm)
+    # even when started 2cm off the line and 6 degrees skewed.
+    for x0, a0 in [(80.6, 90), (79.5, 96), (84.5, 84)]:
+        r = page.evaluate("""([x0,a0])=>{const T=window.__rfTest;T.reset();T.setPose(x0,30,a0);
+            T.runSteps([{kind:'drive',trace:true,until:{bank:'front',hit:'경계',min:5},max:60,label:'trace'}]);
+            for(let i=0;i<400;i++){T.advance(0.05);if(T.getState().routeIndex===-1)break}
+            const s=T.getState();return {msg:s.routeMessage,cx:s.sensors.front[3].p.x,y:s.robot.y}}""", [x0, a0])
+        assert r["msg"] == "custom", r
+        assert abs(r["cx"] - 82) < 0.95, r
+        assert r["y"] > 60, r
+    print("Line tracing keeps the centre sensor on the tape: OK")
 
     # Verify the reference route on the default object layout.
     # #newTrial lives inside the hidden results dialog here (reset() closed it), so
@@ -217,6 +229,9 @@ with sync_playwright() as playwright:
     assert result["score"]["total"] >= 65, result["score"]
     parts = {p[0].split(" (")[0]: p[1] for p in result["score"]["parts"]}
     assert parts["강아지 이동"] == 10 and parts["Pet Toy"] == 10, parts
+    assert parts["우편함 보존"] == 4, parts
+    cat1 = next(o for o in result["objects"] if o["id"] == "cat1")
+    assert 68 < cat1["y"] <= 72.5 and 85 < cat1["x"] < 105, cat1  # left on the table, not dragged away
     assert result["contacts"] == [], result["contacts"]
     assert not errors, errors
     print("User-proposed route: %d/100 points, %.2fs" % (result["score"]["total"], result["t"]))

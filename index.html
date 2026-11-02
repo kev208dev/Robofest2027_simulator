@@ -72,7 +72,7 @@ main{max-width:1440px;margin:auto;padding:20px}h1{margin:0;font-size:clamp(20px,
 <div class="row" style="margin-top:10px"><button id="restoreObjects">물체 기본 위치</button><label class="check"><input type="checkbox" id="showTrail" checked> 바퀴 자취 표시</label></div>
 <p class="muted small">조정은 경기 전 배치 오차를 가정한 것입니다. 일시정지 상태에서 로봇을 끌어서 시작 위치도 바꿀 수 있습니다. 주행 중 밀려서 이동한 물체는 편차 제한 없이 움직입니다. 재배치 시 연습 기록은 초기화됩니다.</p></div>
 <div class="section"><h2>고난도 미션 작업시간 설정</h2>
-<div class="settings"><div class="setting"><label for="timeToy">Pet Toy (초)</label><input id="timeToy" type="number" min="1" max="60" value="18"></div><div class="setting"><label for="timeFood">Food Dispenser (초)</label><input id="timeFood" type="number" min="1" max="60" value="12"></div><div class="setting"><label for="timeHotel">Pet Hotel (초)</label><input id="timeHotel" type="number" min="1" max="60" value="8"></div><div class="setting"><label for="speedMax">최대 속도 (cm/s)</label><input id="speedMax" type="number" min="5" max="45" value="26"></div></div>
+<div class="settings"><div class="setting"><label for="timeToy">Pet Toy (초)</label><input id="timeToy" type="number" min="1" max="60" value="10"></div><div class="setting"><label for="timeFood">Food Dispenser (초)</label><input id="timeFood" type="number" min="1" max="60" value="10"></div><div class="setting"><label for="timeHotel">Pet Hotel (초)</label><input id="timeHotel" type="number" min="1" max="60" value="5"></div><div class="setting"><label for="speedMax">최대 속도 (cm/s)</label><input id="speedMax" type="number" min="5" max="45" value="26"></div></div>
 <p class="muted small">설비 가까이에서 <b>M</b>을 누르면 작업시간이 경과하며 주행이 잠깁니다. 사료는 작업시간 동안 한 개씩 옮겨지므로 120초 시점에는 그때까지 옮긴 개수만 인정됩니다. 120초를 넘겨도 연습을 이어갈 수 있지만, 종료 시 시간 초과가 표시됩니다.</p>
 <div class="settings" style="margin-top:8px"><div class="setting"><label for="utfMode">종료 과제 정지 기준 (UTF 예시)</label><select id="utfMode"><option value="line" selected>출발선(x=82) 위에 차체 일부 (Jr 예시)</option><option value="south">남쪽 가장자리 위에 차체 일부 (Sr 예시)</option></select></div><div class="setting" style="display:flex;align-items:end"><label class="check"><input id="displayCorrect" type="checkbox" checked> 디스플레이 정답 표시 (연습 가정)</label></div></div></div>
 <div class="section"><h2>리프트 (미구현 · 실험용 가정)</h2>
@@ -339,7 +339,8 @@ function bodyOverLine(rb,x0){const cp=corners(rb.x,rb.y,rb.a).map(c=>c.x-x0);ret
 function bodyOverSouthEdge(rb){const cp=corners(rb.x,rb.y,rb.a).map(c=>c.y-H);return Math.max(...cp)>=0&&bodyOutsideFraction(rb.x,rb.y,rb.a)<.5}
 function scoring(data=null){
   const objs=data?.objects||world.objects,flags=data?.flags||achievements, rb=data?.robot||robot;
-  const find=id=>objs.find(o=>o.id===id), moved=id=>{const o=find(id);return o?Math.hypot(o.x-o.ox,o.y-o.oy)>2.5:false};
+  // 'moved' is measured from the object's start position for this trial (nominal + placement offset).
+  const find=id=>objs.find(o=>o.id===id), moved=id=>{const o=find(id);return o?Math.hypot(o.x-o.ox-(o.baseDx||0),o.y-o.oy-(o.baseDy||0))>2.5:false};
   const held=rb.held||[];
   const z=zoneState(objs,held);
   const mailCount=['mail1','mail2'].filter(id=>!moved(id)).length;
@@ -425,7 +426,7 @@ function toggleLift(){
 function eventMove(dt){liftUpdate(dt);if(task){task.remaining-=dt;robot.v=0;robot.omega=0;foodTaskProgress();if(task.remaining<=0)finishTask();return}let requested=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0),maxSpeed=clamp(Number($('speedMax').value)||26,5,45)*(keys.Shift?1.3:1);
 let targetV=pilot&&pilot.driveSpeed!==null?pilot.driveSpeed:requested*(requested<0?.68*maxSpeed:maxSpeed),accel=Math.abs(targetV)<Math.abs(robot.v)?29:18;robot.v+=clamp(targetV-robot.v,-accel*dt,accel*dt);
 if(Math.abs(robot.v)<.06)robot.v=0;
-let targetOmega=0;
+let targetOmega=pilot&&pilot.omega!==undefined?pilot.omega:0;
 if(robot.autoAngle!==null){
   const remaining=((robot.autoAngle-robot.a+540)%360)-180;
   if(Math.abs(remaining)<.25 && Math.abs(robot.omega)<9){robot.a=norm(robot.autoAngle);robot.omega=0;robot.autoAngle=null}
@@ -443,7 +444,7 @@ if(problem){robot.v=0;robot.omega=0;robot.autoAngle=null;
 let travel=Math.abs(step),turn=Math.abs(turnDelta);robot.distance+=travel;robot.turn+=turn;robot.uncorrected+=travel;robot.errPos=clamp(robot.errPos+travel*.033+turn*.008,0,30);robot.errAng=clamp(robot.errAng+turn*.034+travel*.006,0,30);
 if(travel>.005||turn>.005){let lastp=trail[trail.length-1];if(!lastp||Math.hypot(robot.x-lastp.x,robot.y-lastp.y)>.12||t-lastp.t>.12){trail.push({x:robot.x,y:robot.y,t});if(trail.length>14000)trail.splice(0,400)}}
 achieve();}
-function snapshot(){return {t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},lift:{...lift},objects:world.objects.map(o=>({id:o.id,x:o.x,y:o.y,ox:o.ox,oy:o.oy,r:o.r,inside:o.inside||null})),flags:{...achievements},task:task?{...task}:null,food:foods.map(f=>({...f})),contacts:[...fixtureContacts]}}
+function snapshot(){return {t,robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},lift:{...lift},objects:world.objects.map(o=>({id:o.id,x:o.x,y:o.y,ox:o.ox,oy:o.oy,baseDx:o.baseDx||0,baseDy:o.baseDy||0,r:o.r,inside:o.inside||null})),flags:{...achievements},task:task?{...task}:null,food:foods.map(f=>({...f})),contacts:[...fixtureContacts]}}
 function saveFrame(){if(replay)return;if(t-lastRecord<.085)return;record.push(snapshot());lastRecord=t;if(record.length>2000)record.shift()}
 function reset(restore=false){running=false;ended=false;replay=false;trialResult=null;limitFrame=null;routeIndex=-1;routeStarted=false;pilot=null;routeMessage='';$('results').classList.remove('show');$('demoState').textContent='수동 조작 가능 · 추천 경로는 직접 실행해야 합니다.';replayT=0;t=0;Object.assign(robot,{...START,v:0,omega:0,autoAngle:null,gripper:false,held:[],slots:{},distance:0,turn:0,uncorrected:0,errPos:.3,errAng:.4,corrections:0});keys={};pointerObject=null;task=null;trail=[{x:robot.x,y:robot.y,t:0}];record=[];lastRecord=-1;cooldown=0;Object.keys(achievements).forEach(k=>achievements[k]=false);foods.forEach(f=>f.where='dispenser');fixtureContacts.clear();Object.assign(lift,{height:0,target:0,moving:false});world.objects.forEach(o=>{o.inside=null;o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});world.fixtures.forEach(o=>{o.x=o.ox+(restore?0:(o.baseDx||0));o.y=o.oy+(restore?0:(o.baseDy||0));if(restore){o.baseDx=0;o.baseDy=0}});eventLogs=[];saveFrame();updateSelect();say('새 연습 준비 완료. 방향키 또는 시작을 눌러 주행하세요.','ok',true);draw();updateHUD()}
 function resetObjects(){reset(true);say('모든 물체를 기준 위치로 되돌렸습니다','ok',true)}
@@ -463,17 +464,17 @@ const demoRoute=[
  {kind:'drive',axis:'x',to:57,label:'서쪽 39.5cm → 디스펜서 접근'},
  {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
  {kind:'drive',axis:'y',to:24,label:'디스펜서 3cm 팔 접근 거리까지 정렬'},
- {kind:'task',id:'food',label:'사료 수거 12초'},
+ {kind:'task',id:'food',label:'사료 수거 10초'},
  {kind:'drive',axis:'y',to:38,label:'그릇 중심 높이(y=38)까지 후진'},
  {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
  {kind:'drive',axis:'x',to:106.5,label:'펫호텔 그릇 개구부 앞 3cm 팔 접근 (중심 정렬)'},
- {kind:'task',id:'hotel',label:'사료 배달 8초'},
+ {kind:'task',id:'hotel',label:'사료 배달 5초'},
  {kind:'drive',axis:'x',to:85,label:'호텔에서 13cm 후진 · 배설물 회피'},
  {kind:'turn',angle:270,label:'북쪽으로 90° 회전'},
  {kind:'drive',axis:'y',to:18.5,label:'호텔 위쪽 통로 진입'},
  {kind:'turn',angle:0,label:'동쪽으로 90° 회전'},
  {kind:'drive',axis:'x',to:150,label:'호텔 위쪽 좁은 통로 통과 → Pet Toy 3cm 팔 접근'},
- {kind:'task',id:'toy',label:'Pet Toy 작업 18초'},
+ {kind:'task',id:'toy',label:'Pet Toy 작업 10초'},
  {kind:'drive',axis:'x',to:85,label:'좁은 통로로 후진'},
  {kind:'turn',angle:90,label:'남쪽으로 90° 회전'},
  {kind:'drive',axis:'y',to:37.5,label:'출발선 높이로 이동'},
@@ -487,6 +488,7 @@ const demoRoute=[
 //  drive {reverse,until:{bank:'front'|'back',hit:'검은선'|'경계',min:n},max}  drive until sensors fire
 //  drive {untilNear:{object[,f]}} drive until the object touches the nose / is at local offset f
 //  drive {untilMission:fixture}  drive until the fixture is within the arm's mission reach
+//  drive {trace:true,until}   line tracing: steer so the centre front sensor stays on the tape
 //  drive {...,tolerant:true}  a blocked pose ends the step instead of aborting the route (push to a wall)
 //  turn {angle} | turn {by}   absolute heading / relative turn (+ = right/clockwise on screen)
 //  aim {target}               turn to face an object or fixture (used where the field drawing is
@@ -509,26 +511,30 @@ const userRoute=[
  {kind:'drive',dist:-4,label:'살짝 후진'},
  {kind:'turn',by:-45,label:'좌 45° 회전'},
  {kind:'drive',axis:'y',to:37.5,reverse:true,label:'후진하여 디스펜서/그루머 중점(y≈37.5)으로 복귀'},
- {kind:'aim',target:'dogpark',plan:'좌 90° 회전',label:'Dog Park 방향 회전 (안: 좌 90°)'},
- {kind:'drive',untilNear:{object:'dogpark',f:14},max:70,label:'Dog Park까지 전진'},
+ {kind:'aim',target:{x:19,y:66,label:'Dog Park 동쪽 지점'},plan:'좌 90° 회전',label:'Dog Park 방향 회전 (안: 좌 90° · 우편함 2 회피 위해 공원 중심 3cm 동쪽 조준)'},
+ {kind:'drive',untilNear:{object:{x:19,y:66},f:14},max:70,label:'Dog Park까지 전진'},
  {kind:'release',label:'팔 벌려 강아지 놓기'},
  {kind:'drive',axis:'y',to:37.5,reverse:true,label:'후진하여 중점으로 복귀'},
  {kind:'turn',angle:0,label:'동쪽(출발선 방향)으로 회전'},
  {kind:'drive',until:{bank:'front',hit:'검은선',min:5},max:40,label:'출발선 감지까지 전진'},
  {kind:'drive',dist:11.1,label:'조금 더 직진 (차체 중심을 선 위로)'},
  {kind:'turn',angle:90,label:'우 90° 회전 (남쪽)'},
- {kind:'drive',until:{bank:'front',hit:'경계',min:5},max:40,label:'출발선 라인트레이싱 → 남쪽 낭떠러지까지'},
+ {kind:'drive',trace:true,until:{bank:'front',hit:'경계',min:5},max:40,label:'출발선 라인트레이싱 (중앙 센서를 선 위에 유지) → 남쪽 낭떠러지까지'},
  {kind:'drive',dist:-4.4,label:'후진 4.4cm (현재 배치: 고양이 높이 y≈57에서 회전 공간 확보)'},
  {kind:'turn',angle:0,label:'좌 90° 회전 (동쪽)'},
  {kind:'drive',untilNear:{object:'cat1'},max:50,label:'흰 고양이 포획 거리까지만 전진'},
  {kind:'grip',expect:['cat1'],forbid:['cat2'],label:'흰 고양이만 포획'},
  {kind:'pivot',wheel:'left',by:90,plan:'우 90° 제자리 회전',label:'왼쪽 바퀴 고정 피벗 → 남쪽 (현재 배치: 제자리 회전은 고양이가 Vet 벽에 걸림)'},
  {kind:'lift',up:true,optional:true,label:'리프트 상승 (설정 시)'},
- {kind:'drive',dist:12,tolerant:true,label:'남쪽으로 전진 (Vet 벽/가장자리까지)'},
- {kind:'release',label:'흰 고양이 놓기 (현재 배치: Vet 서쪽 밖 → 이동 점수만)'},
+ {kind:'drive',axis:'y',to:54.5,tolerant:true,label:'남쪽으로 전진 (고양이를 테이블 남쪽 끝 y≈71 · 복귀 통로 밖에 둠)'},
+ {kind:'release',label:'흰 고양이 놓기 (현재 배치: Vet 서쪽 테이블 위 → 이동 점수만)'},
  {kind:'lift',up:false,optional:true,label:'리프트 하강'},
- {kind:'drive',axis:'y',to:48.25,reverse:true,label:'후진하여 피벗 위치로'},
- {kind:'pivot',wheel:'left',by:-90,label:'왼쪽 바퀴 고정 역피벗 → 동쪽 (y≈57 복귀)'},
+ {kind:'drive',axis:'y',to:40,reverse:true,label:'북쪽으로 후진 (회전 반경이 흰 고양이에 닿지 않게)'},
+ {kind:'turn',angle:0,label:'좌 90° 회전 (동쪽)'},
+ {kind:'drive',axis:'x',to:100.5,label:'동쪽으로 3cm'},
+ {kind:'pivot',wheel:'right',by:90,label:'오른쪽 바퀴 고정 피벗 → 남쪽 (호텔에서 멀어지며 회전)'},
+ {kind:'drive',axis:'y',to:48.25,label:'남쪽으로 전진 · 흰 고양이 옆 통과'},
+ {kind:'pivot',wheel:'left',by:-90,label:'왼쪽 바퀴 고정 피벗 → 동쪽 (y=57 · 주황 고양이 정면, Vet 모서리 회피)'},
  {kind:'drive',untilNear:{object:'cat2'},max:40,label:'주황 고양이 포획 거리까지 전진'},
  {kind:'grip',expect:['cat2'],label:'주황 고양이 포획'},
  {kind:'drive',reverse:true,until:{bank:'back',hit:'검은선',min:5},max:60,label:'출발선 감지까지 후진'},
@@ -544,7 +550,7 @@ const userRoute=[
  {kind:'drive',axis:'y',to:24,label:'디스펜서 앞 y=24까지 전진 (검은선 x=54 옆 · 회전 반경 16cm 확보)'},
  {kind:'turn',angle:0,plan:'살짝 우회전하여 Litter Box 바라보기',label:'동쪽으로 회전 (현재 배치: 호텔·화장실 사이 통로 y=24)'},
  {kind:'drive',axis:'x',to:110.5,label:'화장실 앞 대기점(110.5,24)까지 동진'},
- {kind:'turn',angle:270,label:'북쪽으로 회전 (배터리 1·2는 차체 폭 안, 3은 현재 배치에서 폭 밖)'},
+ {kind:'turn',angle:270,label:'북쪽으로 회전 (배터리 1·2는 차체 앞 · 3은 현재 배치에서 호텔 때문에 닿지 않음)'},
  {kind:'drive',dist:30,tolerant:true,label:'Litter Box 벽에 막힐 때까지 전진 · 배터리 밀어 넣기'},
  {kind:'drive',axis:'y',to:24,reverse:true,label:'후진하여 회전 공간 확보'},
  {kind:'turn',angle:0,plan:'우 70° 회전',label:'동쪽으로 회전 (현재 배치: 출발선이 정서쪽이라 90°)'},
@@ -581,7 +587,7 @@ function demoUpdate(dt){
   if(routeIndex>=activeRoute.length){routeIndex=-1;pilot=null;return}
   const c=activeRoute[routeIndex];
   $('demoState').textContent=`${routeIndex+1}/${activeRoute.length} · ${c.label}`;
-  const next=()=>{delete c._armed;routeIndex++;routeStarted=false;pilot=null;robot.v=0;robot.omega=0;stepStart=null};
+  const next=()=>{delete c._armed;delete c._lost;routeIndex++;routeStarted=false;pilot=null;robot.v=0;robot.omega=0;stepStart=null};
   const profile=(gap,sign=1)=>Math.abs(gap)<.30?0:sign*Math.sign(gap)*Math.min(21,Math.sqrt(Math.max(0,2*25*Math.abs(gap))));
   if(!routeStarted&&c.kind!=='finish'){stepStart={x:robot.x,y:robot.y,a:robot.a,distance:robot.distance,t};say((routeIndex+1)+'/'+activeRoute.length+' '+c.label,'ok',true)}
   const blocked=pilot&&pilot.blocked;
@@ -607,6 +613,19 @@ function demoUpdate(dt){
     let speed=0,done=false;
     if(c.axis){const gap=c.to-robot[c.axis],proj=c.axis==='x'?Math.cos(rad(robot.a)):Math.sin(rad(robot.a));speed=proj===0?0:profile(gap/proj);done=Math.abs(gap)<.30&&Math.abs(robot.v)<1.1}
     else if(c.dist!==undefined){const gap=Math.abs(c.dist)-travelled;speed=profile(gap,Math.sign(c.dist));done=gap<.30&&Math.abs(robot.v)<1.1}
+    else if(c.trace){
+      // Line tracing: weighted centre of the front sensors that see tape -> steering error.
+      // Positive lateral = right of the robot. The centre sensor (index 3) on the tape = 0 error.
+      const bank=sensorStates().front,on=bank.map((p,i)=>p.hit==='검은선'?SENSOR_LATERALS[i]:null).filter(v=>v!==null);
+      const stop=c.until?sensorCount(c.until.bank,c.until.hit)>=(c.until.min||5):false;
+      if(!on.length&&!stop){c._lost=(c._lost||0)+Math.abs(robot.v)*dt;if(c._lost>4){abortRoute(c.label+' · 선을 놓침 (4cm 이상 미감지)');return}}else c._lost=0;
+      const err=on.length?on.reduce((a,b)=>a+b,0)/on.length:0;
+      c._maxErr=Math.max(c._maxErr||0,Math.abs(err));
+      done=stop;speed=done?0:(c.speed||14);
+      pilot={driveSpeed:speed,omega:done?0:clamp(9*err,-35,35),tolerant:!!c.tolerant};
+      if(done){robot.v=0;say(c.label+' 완료 · 최대 중앙 오차 '+c._maxErr.toFixed(1)+'cm','ok',true);delete c._maxErr;next()}
+      return;
+    }
     else if(c.until){const n=sensorCount(c.until.bank,c.until.hit);if(c._armed===undefined)c._armed=n===0;if(!c._armed&&n===0)c._armed=true;done=c._armed&&n>=(c.until.min||5);speed=done?0:sign*(c.speed||14)}
     else if(c.untilMission){const f=world.fixtures.find(x=>x.id===c.untilMission);done=missionNear(f);const p=worldToLocal(f);speed=done?0:profile(Math.max(p.f-HALF_L,0.5))*sign}
     else if(c.untilNear){const o=routeTarget(c.untilNear.object);if(!o){abortRoute('대상 없음');return}const p=worldToLocal(o),want=c.untilNear.f!==undefined?c.untilNear.f:HALF_L+(o.r||0)+.6;done=p.f<=want&&Math.abs(p.l)<=ARM_MOUTH_HALF+1.5;const gap=p.f-want;speed=done?0:profile(Math.max(gap,0.5))*sign;if(!done&&Math.abs(p.l)>ARM_MOUTH_HALF+3&&p.f<want+6){abortRoute(c.label+' · '+(o.label||c.untilNear.object)+' 측방 어긋남 '+p.l.toFixed(1)+'cm');return}}
@@ -651,7 +670,7 @@ function saveResult(){
   a.href=u;a.download='robofest2027_trial_score.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)
 }
 // Exposed solely for deterministic browser-based regression tests and reproducible route validation.
-window.__rfTest={advance:(dt)=>advance(dt),startDemo,routes:Object.keys(routes),routeSteps:name=>routes[name].steps.map(s=>s.label),finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),armLength:ARM_LENGTH,food:foods.map(f=>({...f})),foodCounts:foodCounts(),sensors:sensorStates(),result:trialResult,routeIndex,routeMessage,routeStep:routeIndex>=0?activeRoute[routeIndex].label:null,lift:{...lift},contacts:[...fixtureContacts],task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction,missionNear,lift:toggleLift,applyDeviations:d=>{for(const [id,[dx,dy]] of Object.entries(d)){const o=allObjects().find(o=>o.id===id);if(o)applyDeviation(o,clamp(dx,-2,2),clamp(dy,-2,2))}},forcePose:(x,y,a)=>{const f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});trail=[{x,y,t}];return true}};
+window.__rfTest={advance:(dt)=>advance(dt),startDemo,routes:Object.keys(routes),routeSteps:name=>routes[name].steps.map(s=>s.label),finishGame,getState:()=>({t,bodyOutsideFraction:bodyOutsideFraction(),robot:{...robot,held:[...robot.held],slots:JSON.parse(JSON.stringify(robot.slots))},objects:world.objects.map(o=>({...o})),achievements:{...achievements},score:scoring(),armLength:ARM_LENGTH,food:foods.map(f=>({...f})),foodCounts:foodCounts(),sensors:sensorStates(),result:trialResult,routeIndex,routeMessage,routeStep:routeIndex>=0&&activeRoute[routeIndex]?activeRoute[routeIndex].label||activeRoute[routeIndex].kind:null,lift:{...lift},contacts:[...fixtureContacts],task:task?{...task}:null}),setPose:(x,y,a)=>{if(running)return false;let f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});return true},grab:toggleGrip,turn:targetTurn,reset,score:scoring,bodyOutsideFraction,missionNear,lift:toggleLift,applyDeviations:d=>{for(const [id,[dx,dy]] of Object.entries(d)){const o=allObjects().find(o=>o.id===id);if(o)applyDeviation(o,clamp(dx,-2,2),clamp(dy,-2,2))}},getRoute:name=>JSON.parse(JSON.stringify(routes[name].steps)),placeObject:(id,x,y)=>{const o=world.objects.find(o=>o.id===id);if(!o)return false;o.x=x;o.y=y;return true},runSteps:steps=>{activeRoute=steps;activeRoute.forEach(st=>{delete st._armed;delete st._target});routeIndex=0;routeStarted=false;running=true;ended=false;routeMessage='custom';return true},forcePose:(x,y,a)=>{const f=fixtureCollision(x,y,a);if(f)return f;Object.assign(robot,{x,y,a});trail=[{x,y,t}];return true}};
 function draw(){let viewport=canvas.getBoundingClientRect(),pix=window.devicePixelRatio||1,cw=Math.max(1,Math.round(viewport.width*pix)),ch=Math.max(1,Math.round(viewport.height*pix));if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(cw/FW,0,0,ch/FH,OX*cw/FW,OY*ch/FH);ctx.clearRect(-OX,-OY,FW,FH);ctx.fillStyle='#e9f1f3';ctx.fillRect(-OX,-OY,FW,FH);
 function rect(x,y,w,h,fill,stroke,sw=.5){ctx.beginPath();ctx.rect(x,y,w,h);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
 function circle(x,y,r,fill,stroke,sw=.5){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=sw;ctx.strokeStyle=stroke;ctx.stroke()}}
@@ -673,7 +692,7 @@ for(const f of foods){
  const p=foodLocation(f);
  if(p)circle(p.x,p.y,.98,'#9a5736','#50301f',.2);
 }
-for(const o of world.objects){let onMove=dist(o,{x:o.ox,y:o.oy})>2.2;circle(o.x,o.y,o.r,o.color,onMove?'#b35342':'#6b7f87',onMove?.95:.6);if(o.id==='cat1')circle(o.x,o.y,.65,'#8bb7c6');if(o.id.startsWith('mail')){rect(o.x-1.4,o.y-.9,2.8,1.8,'#f4e8e8');}if(o.id==='dog')circle(o.x+.5,o.y-.4,.6,'#e9f0ed');}
+for(const o of world.objects){let onMove=dist(o,{x:o.ox+(o.baseDx||0),y:o.oy+(o.baseDy||0)})>2.2;circle(o.x,o.y,o.r,o.color,onMove?'#b35342':'#6b7f87',onMove?.95:.6);if(o.id==='cat1')circle(o.x,o.y,.65,'#8bb7c6');if(o.id.startsWith('mail')){rect(o.x-1.4,o.y-.9,2.8,1.8,'#f4e8e8');}if(o.id==='dog')circle(o.x+.5,o.y-.4,.6,'#e9f0ed');}
 // Fixed labels and occasional highlights.
 label('DOG',6,4,3.1);label('MAIL',19,37,2.8);label('MAIL',19,53,2.8);label('DOG PARK',10,73,2.6);label('GROOMER',52,69.4,2.5,'#3e5948','center');label('VET',127,69.4,2.5,'#3e5948','center');label('LITTER',117,-2.7,3,'#34474a','center');label('CAT',122,55,2.8);label('CAT',134,55,2.8);
 ctx.restore(); // Field clipping ends here: allow robot body and arms to render past the cliff edge.
